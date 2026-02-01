@@ -12,8 +12,9 @@ const StoreDashboard = () => {
     const [shifts, setShifts] = useState([]);
     const [jobAreas, setJobAreas] = useState([]);
     const [offers, setOffers] = useState([]);
+    const [invoices, setInvoices] = useState([]);
 
-    // Tabs: 'orders', 'menu', 'profile', 'staff', 'roster', 'offers'
+    // Tabs: 'orders', 'menu', 'profile', 'staff', 'roster', 'offers', 'inventory'
     const [activeTab, setActiveTab] = useState('orders');
 
     const [editingItem, setEditingItem] = useState(null); // For Menu, Staff, Shift, Offer
@@ -42,6 +43,7 @@ const StoreDashboard = () => {
         if (activeTab === 'staff') { await fetchStaff(); await fetchJobAreas(); }
         if (activeTab === 'roster') { await fetchShifts(); await fetchStaff(); await fetchJobAreas(); }
         if (activeTab === 'offers') await fetchOffers();
+        if (activeTab === 'inventory') await fetchInvoices();
     };
 
     // --- Fetchers ---
@@ -52,6 +54,7 @@ const StoreDashboard = () => {
     const fetchShifts = async () => { try { const res = await api.get(`/shifts/store/${user.storeId}`); setShifts(res.data); } catch (err) { console.error(err); } };
     const fetchJobAreas = async () => { try { const res = await api.get(`/job-areas/store/${user.storeId}`); setJobAreas(res.data); } catch (err) { console.error(err); } };
     const fetchOffers = async () => { try { const res = await api.get(`/offers/store/${user.storeId}`); setOffers(res.data); } catch (err) { console.error(err); } };
+    const fetchInvoices = async () => { try { const res = await api.get(`/stores/${user.storeId}/invoices`); setInvoices(res.data); } catch (err) { console.error(err); } };
 
     // --- Actions ---
     const updateStatus = async (orderId, status) => { try { await api.put(`/orders/${orderId}/status?status=${status}`); fetchOrders(); } catch (err) { console.error(err); } };
@@ -133,6 +136,24 @@ const StoreDashboard = () => {
         try { await api.put(`/stores/${user.storeId}`, data); alert("Profile updated!"); fetchStoreProfile(); } catch (err) { console.error(err); }
     };
 
+    const handleInvoiceUpload = async (e) => {
+        e.preventDefault();
+        const file = e.target.file.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            await api.post(`/stores/${user.storeId}/invoices/upload`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setIsModalOpen(false);
+            fetchInvoices();
+            alert("Invoice uploaded and parsing initiated!");
+        } catch (err) { console.error(err); alert("Upload failed."); }
+    };
+
     if (loading || !user) return <div>Loading...</div>;
 
     const openModal = (type, item = {}) => {
@@ -157,6 +178,7 @@ const StoreDashboard = () => {
                         { id: 'staff', label: 'Team', icon: '👥' },
                         { id: 'roster', label: 'Roster', icon: '📅' },
                         { id: 'offers', label: 'Marketing', icon: '🔥' },
+                        { id: 'inventory', label: 'Inventory & Costs', icon: '📦' },
                         { id: 'profile', label: 'Store Profile', icon: '🏪' }
                     ].map(tab => (
                         <button
@@ -392,6 +414,56 @@ const StoreDashboard = () => {
                     </div>
                 )}
 
+                {/* --- Inventory & Costs Tab --- */}
+                {activeTab === 'inventory' && (
+                    <div className="animate-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+                            <div>
+                                <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Inventory & Costs</h1>
+                                <p style={{ color: 'var(--slate-500)' }}>Automated supply chain expense tracking powered by Claude 3.5</p>
+                            </div>
+                            <button className="btn btn-primary" onClick={() => openModal('invoice')}>+ Upload New Invoice</button>
+                        </div>
+
+                        <div className="grid-responsive" style={{ marginBottom: '3rem' }}>
+                            <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+                                <p style={{ color: 'var(--slate-500)', marginBottom: '0.5rem' }}>Total COGS (Monthly)</p>
+                                <h2 style={{ fontSize: '2.5rem' }}>${invoices.reduce((acc, inv) => acc + (inv.totalAmount || 0), 0).toFixed(2)}</h2>
+                            </div>
+                            <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+                                <p style={{ color: 'var(--slate-500)', marginBottom: '0.5rem' }}>Parsed Invoices</p>
+                                <h2 style={{ fontSize: '2.5rem' }}>{invoices.length}</h2>
+                            </div>
+                        </div>
+
+                        <div className="card" style={{ padding: '2rem' }}>
+                            <h3 style={{ marginBottom: '1.5rem' }}>Recent Invoices</h3>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--slate-100)' }}>
+                                        <th style={{ padding: '1rem' }}>Supplier</th>
+                                        <th style={{ padding: '1rem' }}>Date</th>
+                                        <th style={{ padding: '1rem' }}>Status</th>
+                                        <th style={{ padding: '1rem', textAlign: 'right' }}>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {invoices.map(inv => (
+                                        <tr key={inv.id} style={{ borderBottom: '1px solid var(--slate-50)' }}>
+                                            <td style={{ padding: '1rem', fontWeight: 600 }}>{inv.supplierName || 'Extracting...'}</td>
+                                            <td style={{ padding: '1rem' }}>{inv.invoiceDate}</td>
+                                            <td style={{ padding: '1rem' }}><span className="badge badge-primary">{inv.status}</span></td>
+                                            <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 800 }}>${inv.totalAmount?.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                    {invoices.length === 0 && (
+                                        <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--slate-400)' }}>No invoices uploaded yet.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
                 {/* PROFILE TAB */}
                 {activeTab === 'profile' && store && (
                     <div className="animate-in">
@@ -425,7 +497,7 @@ const StoreDashboard = () => {
                                 <button onClick={() => setIsModalOpen(false)} className="btn-logout" style={{ fontSize: '1.5rem', padding: 0 }}>×</button>
                             </div>
 
-                            <form onSubmit={handleSave}>
+                            <form onSubmit={modalType === 'invoice' ? handleInvoiceUpload : handleSave}>
                                 {modalType === 'menu' && (
                                     <>
                                         <div className="form-group"><label className="label">Item Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
@@ -475,8 +547,37 @@ const StoreDashboard = () => {
                                             </select>
                                         </div>
                                         <div className="form-group"><label className="label">Start Time</label><input className="input" name="startTime" type="datetime-local" defaultValue={editingItem?.startTime?.slice(0, 16)} required /></div>
-                                        <div className="form-group"><label className="label">End Time</label><input className="input" name="endTime" type="datetime-local" defaultValue={editingItem?.endTime?.slice(0, 16)} required /></div>
+                                        <div className="form-group"><label className="label">End Time</label><input className="input" name="endTime" type="datetime-local" defaultValue={editingItem?.endTime} required /></div>
                                     </>
+                                )}
+                                {modalType === 'invoice' && (
+                                    <div className="animate-in" style={{ textAlign: 'center' }}>
+                                        <div style={{
+                                            border: '2px dashed var(--slate-200)',
+                                            padding: '4rem 2rem',
+                                            borderRadius: 'var(--radius-lg)',
+                                            backgroundColor: 'var(--slate-50)',
+                                            marginBottom: '2rem',
+                                            transition: 'all 0.3s ease'
+                                        }}>
+                                            <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>📄</div>
+                                            <h4 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Drop your invoice here</h4>
+                                            <p style={{ color: 'var(--slate-500)', marginBottom: '2rem' }}>Only PDF files are supported for AI parsing</p>
+
+                                            <input
+                                                type="file"
+                                                name="file"
+                                                accept="application/pdf"
+                                                className="input"
+                                                style={{ border: 'none', background: 'white', padding: '1rem', cursor: 'pointer' }}
+                                                required
+                                            />
+                                        </div>
+                                        <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: '1.6' }}>
+                                            <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Claude 3.5 AI</span> will automatically extract supplier details, <br />
+                                            dates, and itemized costs into your records.
+                                        </p>
+                                    </div>
                                 )}
                                 {modalType === 'offer' && (
                                     <>
