@@ -55,7 +55,7 @@ const Register = () => {
                         <input type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} required placeholder="My Awesome Cafe" />
                     </div>
                 )}
-                <button type="submit" className="btn" style={{ marginTop: '1rem' }}>Register</button>
+                <button type="submit" className="btn btn-block" style={{ marginTop: '1.5rem' }}>Create Account</button>
             </form>
             <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#64748B' }}>
                 Already have an account? <Link to="/login" style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Login here</Link>

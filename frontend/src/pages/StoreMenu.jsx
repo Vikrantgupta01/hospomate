@@ -27,7 +27,7 @@ const StoreMenu = () => {
 
     return (
         <div className="container">
-            <Link to="/" style={{ display: 'inline-block', margin: '1rem 0', color: '#666' }}>&larr; Back to Stores</Link>
+            <Link to="/" className="btn-secondary btn-sm btn-pill" style={{ margin: '1.5rem 0' }}>&larr; Back to Stores</Link>
             <div style={{ background: '#fff', padding: '2rem', borderRadius: '8px', marginBottom: '2rem' }}>
                 <h1>{store.name}</h1>
                 <p>{store.address}</p>
@@ -43,8 +43,8 @@ const StoreMenu = () => {
                             <p style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>${item.price.toFixed(2)}</p>
                         </div>
                         {item.available ? (
-                            <button className="btn" style={{ width: 'auto', padding: '0.5rem 1rem' }} onClick={() => addToCart(item, store.id)}>
-                                Add
+                            <button className="btn btn-sm btn-pill" style={{ padding: '0.5rem 1.25rem' }} onClick={() => addToCart(item, store.id)}>
+                                Add to Cart
                             </button>
                         ) : (
                             <span style={{ color: 'red', fontSize: '0.9rem' }}>Sold Out</span>

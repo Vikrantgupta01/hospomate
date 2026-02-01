@@ -30,8 +30,8 @@ const StoreList = () => {
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 0' }}>
                 <h1 style={{ color: 'var(--primary-color)', fontSize: '2rem' }}>HospoMate</h1>
                 <div>
-                    <Link to="/cart" className="btn-secondary" style={{ marginRight: '1rem', padding: '0.5rem 1rem', borderRadius: '20px', display: 'inline-block', width: 'auto' }}>Cart</Link>
-                    <Link to="/login" className="btn" style={{ width: 'auto', padding: '0.5rem 1.5rem', borderRadius: '20px' }}>Login</Link>
+                    <Link to="/cart" className="btn-secondary btn-pill" style={{ marginRight: '0.75rem', padding: '0.6rem 1.25rem' }}>View Cart</Link>
+                    <Link to="/login" className="btn btn-pill" style={{ padding: '0.6rem 1.75rem' }}>Login</Link>
                 </div>
             </header>
 
@@ -46,7 +46,7 @@ const StoreList = () => {
                         onChange={(e) => setSearch(e.target.value)}
                         style={{ padding: '1rem', flex: 1, borderRadius: 'var(--radius)', border: '1px solid var(--grey-light)', fontSize: '1rem', boxShadow: 'var(--shadow)' }}
                     />
-                    <button type="submit" className="btn" style={{ width: 'auto', borderRadius: 'var(--radius)', padding: '0 2rem' }}>Search</button>
+                    <button type="submit" className="btn btn-pill" style={{ padding: '0 2rem' }}>Search</button>
                 </form>
             </div>
 
@@ -59,7 +59,7 @@ const StoreList = () => {
                         <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <h3 style={{ marginBottom: '0.5rem', fontSize: '1.5rem' }}>{store.name}</h3>
                             <p style={{ color: '#64748B', marginBottom: '1.5rem', flex: 1 }}>{store.address}</p>
-                            <Link to={`/store/${store.id}`} className="btn-secondary" style={{ textAlign: 'center', display: 'block', width: '100%' }}>View Menu</Link>
+                            <Link to={`/store/${store.id}`} className="btn-secondary btn-block" style={{ textAlign: 'center' }}>View Menu</Link>
                         </div>
                     </div>
                 ))}

@@ -39,7 +39,7 @@ const Login = () => {
                     <label>Password</label>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
                 </div>
-                <button type="submit" className="btn" style={{ marginTop: '1rem' }}>Sign In</button>
+                <button type="submit" className="btn btn-block" style={{ marginTop: '1.5rem' }}>Sign In</button>
             </form>
             <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#64748B' }}>
                 Don't have an account? <Link to="/register" style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Register here</Link>

@@ -46,7 +46,7 @@ const Cart = () => {
         return (
             <div className="container">
                 <h2>Your Cart is Empty</h2>
-                <Link to="/">Browse Stores</Link>
+                <Link to="/" className="btn btn-sm" style={{ marginTop: '1rem' }}>Browse Stores</Link>
             </div>
         );
     }
@@ -63,15 +63,15 @@ const Cart = () => {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <p>${(item.price * item.quantity).toFixed(2)}</p>
-                            <button onClick={() => removeFromCart(item.id)} style={{ color: 'red', border: 'none', background: 'none' }}>Remove</button>
+                            <button onClick={() => removeFromCart(item.id)} className="btn-logout" style={{ border: 'none', background: 'transparent' }}>Remove Item</button>
                         </div>
                     </div>
                 ))}
 
                 <div style={{ marginTop: '2rem', textAlign: 'right' }}>
                     <h3>Total: ${cartTotal.toFixed(2)}</h3>
-                    <button className="btn" onClick={handleCheckout} disabled={loading} style={{ width: '200px', marginTop: '1rem' }}>
-                        {loading ? 'Processing...' : 'Checkout'}
+                    <button className="btn btn-block" onClick={handleCheckout} disabled={loading} style={{ marginTop: '1rem' }}>
+                        {loading ? 'Processing...' : 'Checkout Now'}
                     </button>
                 </div>
             </div>

@@ -143,14 +143,14 @@ const StoreDashboard = () => {
 
     return (
         <div className="container">
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0' }}>
-                <h1>Store Dashboard</h1>
-                <button onClick={logout} className="btn-secondary" style={{ width: 'auto', padding: '0.5rem 1rem' }}>Logout</button>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2rem 0' }}>
+                <h1 style={{ color: 'var(--secondary-color)', fontSize: '2rem' }}>Store Dashboard</h1>
+                <button onClick={logout} className="btn-logout">Logout</button>
             </header>
 
-            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #ccc', paddingBottom: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2.5rem', flexWrap: 'wrap', background: 'var(--white)', padding: '0.75rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
                 {['orders', 'menu', 'staff', 'roster', 'offers', 'profile'].map(tab => (
-                    <button key={tab} className={`btn ${activeTab === tab ? '' : 'btn-secondary'}`} onClick={() => setActiveTab(tab)} style={{ width: 'auto', textTransform: 'capitalize' }}>
+                    <button key={tab} className={`btn btn-sm ${activeTab === tab ? '' : 'btn-secondary'}`} onClick={() => setActiveTab(tab)} style={{ width: 'auto', textTransform: 'capitalize', boxShadow: activeTab === tab ? 'var(--shadow)' : 'none' }}>
                         {tab}
                     </button>
                 ))}
@@ -173,10 +173,13 @@ const StoreDashboard = () => {
                                     {order.items.map((item, idx) => <li key={idx}>{item.quantity}x {item.menuItem.name}</li>)}
                                 </ul>
                                 <p style={{ fontWeight: 'bold' }}>Total: ${order.total.toFixed(2)}</p>
-                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                    {order.status === 'PENDING' && (<> <button className="btn" onClick={() => updateStatus(order.id, 'ACCEPTED')}>Accept</button> <button className="btn" style={{ background: '#dc3545' }} onClick={() => updateStatus(order.id, 'REJECTED')}>Reject</button> </>)}
-                                    {order.status === 'ACCEPTED' && <button className="btn" onClick={() => updateStatus(order.id, 'READY')}>Mark Ready</button>}
-                                    {order.status === 'READY' && <button className="btn" style={{ background: '#28a745' }} onClick={() => updateStatus(order.id, 'COMPLETED')}>Complete</button>}
+                                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                                    {order.status === 'PENDING' && (<>
+                                        <button className="btn btn-sm" style={{ flex: 1 }} onClick={() => updateStatus(order.id, 'ACCEPTED')}>Accept Order</button>
+                                        <button className="btn btn-danger btn-sm" style={{ flex: 1 }} onClick={() => updateStatus(order.id, 'REJECTED')}>Reject</button>
+                                    </>)}
+                                    {order.status === 'ACCEPTED' && <button className="btn btn-sm" style={{ width: '100%' }} onClick={() => updateStatus(order.id, 'READY')}>Mark Ready for Pickup</button>}
+                                    {order.status === 'READY' && <button className="btn btn-success btn-sm" style={{ width: '100%' }} onClick={() => updateStatus(order.id, 'COMPLETED')}>Complete Order</button>}
                                 </div>
                             </div>
                         ))}
@@ -198,9 +201,9 @@ const StoreDashboard = () => {
                                 <p>{item.description}</p>
                                 <p>${item.price.toFixed(2)}</p>
                                 <p>{item.available ? 'Available' : 'Unavailable'}</p>
-                                <div style={{ marginTop: '0.5rem' }}>
-                                    <button className="btn-secondary" style={{ marginRight: '0.5rem', width: 'auto' }} onClick={() => openModal('menu', item)}>Edit</button>
-                                    <button className="btn" style={{ background: 'red', width: 'auto' }} onClick={() => handleDelete(`/stores/menu/${item.id}`, fetchMenu)}>Delete</button>
+                                <div style={{ marginTop: '1.25rem', display: 'flex', gap: '0.5rem' }}>
+                                    <button className="btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openModal('menu', item)}>Edit</button>
+                                    <button className="btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleDelete(`/stores/menu/${item.id}`, fetchMenu)}>Delete</button>
                                 </div>
                             </div>
                         ))}
@@ -227,8 +230,8 @@ const StoreDashboard = () => {
                                     <small style={{ color: '#94a3b8' }}>{s.email} | {s.phone}</small>
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button className="btn-secondary" style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={() => openModal('staff', s)}>Edit</button>
-                                    <button className="btn" style={{ background: '#fee2e2', color: '#ef4444', width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem', boxShadow: 'none' }} onClick={() => handleDelete(`/staff/${s.id}`, fetchStaff)}>Delete</button>
+                                    <button className="btn-secondary btn-sm" style={{ width: 'auto' }} onClick={() => openModal('staff', s)}>Edit</button>
+                                    <button className="btn-danger btn-sm" style={{ width: 'auto' }} onClick={() => handleDelete(`/staff/${s.id}`, fetchStaff)}>Delete</button>
                                 </div>
                             </div>
                         ))}
@@ -239,7 +242,7 @@ const StoreDashboard = () => {
                             {jobAreas.map(ja => (
                                 <span key={ja.id} style={{ background: '#f8fafc', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', color: '#475569', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     {ja.name}
-                                    <button onClick={() => handleDelete(`/job-areas/${ja.id}`, fetchJobAreas)} style={{ border: 'none', background: 'none', color: '#94a3b8', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>×</button>
+                                    <button onClick={() => handleDelete(`/job-areas/${ja.id}`, fetchJobAreas)} className="btn-clear btn-sm" style={{ color: '#94a3b8', fontWeight: 'bold', fontSize: '1.1rem' }}>×</button>
                                 </span>
                             ))}
                             <button className="btn-secondary" style={{ width: 'auto', borderRadius: '10px', padding: '0.5rem 1rem', fontSize: '0.85rem', border: '1px dashed var(--primary-color)', background: 'transparent', color: 'var(--primary-color)' }} onClick={() => openModal('jobArea')}>+ Add Area</button>
@@ -266,9 +269,9 @@ const StoreDashboard = () => {
                                     <span>{shift.published ? 'Published' : 'Draft'}</span>
                                 </div>
                                 <p><strong>{shift.staff?.name}</strong> in {shift.jobArea?.name}</p>
-                                <div style={{ marginTop: '0.5rem' }}>
-                                    <button className="btn-secondary" style={{ width: 'auto', marginRight: '0.5rem' }} onClick={() => openModal('shift', shift)}>Edit</button>
-                                    <button className="btn" style={{ background: 'red', width: 'auto' }} onClick={() => handleDelete(`/shifts/${shift.id}`, fetchShifts)}>Delete</button>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                                    <button className="btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openModal('shift', shift)}>Edit</button>
+                                    <button className="btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleDelete(`/shifts/${shift.id}`, fetchShifts)}>Delete</button>
                                 </div>
                             </div>
                         ))}
@@ -300,8 +303,8 @@ const StoreDashboard = () => {
                                 <p style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--primary-color)', margin: '0.5rem 0' }}>{offer.discountPercentage}% OFF</p>
 
                                 <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-                                    <button className="btn-secondary" style={{ width: 'auto', flex: 1, padding: '0.5rem' }} onClick={() => openModal('offer', offer)}>Edit</button>
-                                    <button className="btn" style={{ background: '#FECaca', color: '#991B1B', width: 'auto', flex: 1, padding: '0.5rem', boxShadow: 'none' }} onClick={() => handleDelete(`/offers/${offer.id}`, fetchOffers)}>Delete</button>
+                                    <button className="btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openModal('offer', offer)}>Edit</button>
+                                    <button className="btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleDelete(`/offers/${offer.id}`, fetchOffers)}>Delete</button>
                                 </div>
                             </div>
                         ))}

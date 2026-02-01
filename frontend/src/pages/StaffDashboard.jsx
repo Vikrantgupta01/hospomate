@@ -40,18 +40,18 @@ const StaffDashboard = () => {
 
     return (
         <div className="container">
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0' }}>
-                <h1>Staff Portal</h1>
-                <button onClick={logout} className="btn-secondary" style={{ width: 'auto', padding: '0.5rem 1rem' }}>Logout</button>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2rem 0' }}>
+                <h1 style={{ color: 'var(--secondary-color)' }}>Staff Portal</h1>
+                <button onClick={logout} className="btn-logout">Logout</button>
             </header>
 
             <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', textAlign: 'center', margin: '2rem 0' }}>
                 <h2>Welcome, {user.email}</h2>
                 <p>Manage your shifts and time.</p>
 
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
-                    <button className="btn" style={{ background: '#28a745', width: '200px' }} onClick={handleClockIn}>Clock In</button>
-                    <button className="btn" style={{ background: '#dc3545', width: '200px' }} onClick={handleClockOut}>Clock Out</button>
+                <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginTop: '2.5rem' }}>
+                    <button className="btn btn-success" style={{ width: '200px' }} onClick={handleClockIn}>Clock In</button>
+                    <button className="btn btn-danger" style={{ width: '200px' }} onClick={handleClockOut}>Clock Out</button>
                 </div>
             </div>
 
