@@ -28,38 +28,53 @@ const Register = () => {
     };
 
     return (
-        <div className="auth-container fade-in">
-            <h1 style={{ marginBottom: '0.5rem', color: 'var(--primary-color)' }}>HospoMate</h1>
-            <h2>Create Account</h2>
-            {error && <p style={{ color: '#ef4444', background: '#fee2e2', padding: '0.5rem', borderRadius: 'var(--radius)', marginBottom: '1rem' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Email Address</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+        <div className="auth-layout">
+            <div className="auth-card animate-in">
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✨</div>
+                    <h1 style={{ fontSize: '2rem', color: 'var(--secondary)', marginBottom: '0.5rem' }}>Get Started</h1>
+                    <p className="text-muted">Create your HospoMate account today.</p>
                 </div>
-                <div className="form-group">
-                    <label>Password</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
-                </div>
-                <div className="form-group">
-                    <label>I am a...</label>
-                    <select value={role} onChange={(e) => setRole(e.target.value)}>
-                        <option value="CUSTOMER">Customer</option>
-                        <option value="STORE_OWNER">Store Owner</option>
-                        <option value="STAFF">Staff Member</option>
-                    </select>
-                </div>
-                {role === 'STORE_OWNER' && (
-                    <div className="form-group">
-                        <label>Store Name</label>
-                        <input type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} required placeholder="My Awesome Cafe" />
+
+                {error && (
+                    <div style={{ background: '#fee2e2', color: '#dc2626', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 500, border: '1px solid #fecaca' }}>
+                        {error}
                     </div>
                 )}
-                <button type="submit" className="btn btn-block" style={{ marginTop: '1.5rem' }}>Create Account</button>
-            </form>
-            <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#64748B' }}>
-                Already have an account? <Link to="/login" style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Login here</Link>
-            </p>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="label">Email Address</label>
+                        <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@company.com" />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Password</label>
+                        <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Account Type</label>
+                        <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
+                            <option value="CUSTOMER">Customer (Order Food)</option>
+                            <option value="STORE_OWNER">Store Owner (Manage Shop)</option>
+                            <option value="STAFF">Staff (Clock In/Out)</option>
+                        </select>
+                    </div>
+                    {role === 'STORE_OWNER' && (
+                        <div className="form-group animate-in">
+                            <label className="label">Business Name</label>
+                            <input className="input" type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} required placeholder="e.g. The Coffee House" />
+                        </div>
+                    )}
+                    <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '1rem', height: '3rem' }}>
+                        Create My Account
+                    </button>
+                </form>
+
+                <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.95rem' }}>
+                    <span className="text-muted">Already have an account? </span>
+                    <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+                </div>
+            </div>
         </div>
     );
 };

@@ -142,258 +142,362 @@ const StoreDashboard = () => {
     };
 
     return (
-        <div className="container">
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2rem 0' }}>
-                <h1 style={{ color: 'var(--secondary-color)', fontSize: '2rem' }}>Store Dashboard</h1>
-                <button onClick={logout} className="btn-logout">Logout</button>
-            </header>
+        <div className="dashboard-layout">
+            <aside className="sidebar">
+                <div style={{ marginBottom: '2.5rem' }}>
+                    <h2 style={{ color: 'white', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span style={{ color: 'var(--primary)', fontSize: '1.8rem' }}>●</span> HospoMate
+                    </h2>
+                </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2.5rem', flexWrap: 'wrap', background: 'var(--white)', padding: '0.75rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
-                {['orders', 'menu', 'staff', 'roster', 'offers', 'profile'].map(tab => (
-                    <button key={tab} className={`btn btn-sm ${activeTab === tab ? '' : 'btn-secondary'}`} onClick={() => setActiveTab(tab)} style={{ width: 'auto', textTransform: 'capitalize', boxShadow: activeTab === tab ? 'var(--shadow)' : 'none' }}>
-                        {tab}
+                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {[
+                        { id: 'orders', label: 'Orders', icon: '🛒' },
+                        { id: 'menu', label: 'Menu Room', icon: '🍽️' },
+                        { id: 'staff', label: 'Team', icon: '👥' },
+                        { id: 'roster', label: 'Roster', icon: '📅' },
+                        { id: 'offers', label: 'Marketing', icon: '🔥' },
+                        { id: 'profile', label: 'Store Profile', icon: '🏪' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`btn btn-block ${activeTab === tab.id ? 'btn-primary' : ''}`}
+                            style={{
+                                justifyContent: 'flex-start',
+                                background: activeTab === tab.id ? 'var(--primary)' : 'transparent',
+                                color: 'white',
+                                border: 'none',
+                                padding: '1rem',
+                                opacity: activeTab === tab.id ? 1 : 0.7
+                            }}
+                        >
+                            <span style={{ marginRight: '0.75rem' }}>{tab.icon}</span>
+                            {tab.label}
+                        </button>
+                    ))}
+                </nav>
+
+                <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    <button onClick={logout} className="btn-logout" style={{ width: '100%', justifyContent: 'flex-start', color: '#94a3b8' }}>
+                        🚪 Logout
                     </button>
-                ))}
-            </div>
-
-            {/* ORDERS TAB */}
-            {activeTab === 'orders' && (
-                <div>
-                    <h2>Incoming Orders</h2>
-                    <div style={{ marginTop: '1rem' }}>
-                        {orders.length === 0 ? <p>No orders yet.</p> : orders.map(order => (
-                            <div key={order.id} style={{ background: 'white', padding: '1rem', marginBottom: '1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <h3>Order #{order.id}</h3>
-                                    <span style={{ fontWeight: 'bold' }}>{order.status}</span>
-                                </div>
-                                <p>Customer: {order.customer.email}</p>
-                                <p>Pickup: {new Date(order.pickupTime).toLocaleString()}</p>
-                                <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-                                    {order.items.map((item, idx) => <li key={idx}>{item.quantity}x {item.menuItem.name}</li>)}
-                                </ul>
-                                <p style={{ fontWeight: 'bold' }}>Total: ${order.total.toFixed(2)}</p>
-                                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-                                    {order.status === 'PENDING' && (<>
-                                        <button className="btn btn-sm" style={{ flex: 1 }} onClick={() => updateStatus(order.id, 'ACCEPTED')}>Accept Order</button>
-                                        <button className="btn btn-danger btn-sm" style={{ flex: 1 }} onClick={() => updateStatus(order.id, 'REJECTED')}>Reject</button>
-                                    </>)}
-                                    {order.status === 'ACCEPTED' && <button className="btn btn-sm" style={{ width: '100%' }} onClick={() => updateStatus(order.id, 'READY')}>Mark Ready for Pickup</button>}
-                                    {order.status === 'READY' && <button className="btn btn-success btn-sm" style={{ width: '100%' }} onClick={() => updateStatus(order.id, 'COMPLETED')}>Complete Order</button>}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
-            )}
+            </aside>
 
-            {/* MENU TAB */}
-            {activeTab === 'menu' && (
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2>Menu Items</h2>
-                        <button className="btn" style={{ width: 'auto' }} onClick={() => openModal('menu')}>Add Item</button>
+            <main className="main-content">
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+                    <div>
+                        <h1 style={{ fontSize: '2.2rem', color: 'var(--slate-900)' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
+                        <p className="text-muted">Manage your store's {activeTab} operations</p>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-                        {menu.map(item => (
-                            <div key={item.id} style={{ background: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                <h3>{item.name}</h3>
-                                <p>{item.description}</p>
-                                <p>${item.price.toFixed(2)}</p>
-                                <p>{item.available ? 'Available' : 'Unavailable'}</p>
-                                <div style={{ marginTop: '1.25rem', display: 'flex', gap: '0.5rem' }}>
-                                    <button className="btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openModal('menu', item)}>Edit</button>
-                                    <button className="btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleDelete(`/stores/menu/${item.id}`, fetchMenu)}>Delete</button>
+                </header>
+
+                {/* ORDERS TAB */}
+                {activeTab === 'orders' && (
+                    <div className="animate-in">
+                        <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
+                            {orders.length === 0 ? (
+                                <div className="card" style={{ padding: '3rem', textAlign: 'center', gridColumn: '1/-1' }}>
+                                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+                                    <h3>No orders yet</h3>
+                                    <p className="text-muted">New orders will appear here in real-time.</p>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* STAFF TAB */}
-            {activeTab === 'staff' && (
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2>Staff Members</h2>
-                        <button className="btn" style={{ width: 'auto' }} onClick={() => openModal('staff')}>Add Staff</button>
-                    </div>
-                    <div style={{ marginTop: '1rem' }}>
-                        {staff.map(s => (
-                            <div key={s.id} style={{ background: 'white', padding: '1.25rem', marginBottom: '0.75rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 'var(--shadow-sm)', border: '1px solid #f1f5f9' }}>
-                                <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-                                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{s.name}</h3>
-                                        {s.jobArea && <span style={{ background: 'var(--primary-color)', color: 'white', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '10px', fontWeight: '600', textTransform: 'uppercase' }}>{s.jobArea.name}</span>}
+                            ) : orders.map(order => (
+                                <div key={order.id} className="card" style={{ padding: '1.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                        <div>
+                                            <h3 style={{ margin: 0 }}>Order #{order.id}</h3>
+                                            <span className="text-muted" style={{ fontSize: '0.85rem' }}>{new Date(order.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <span className={`badge ${order.status === 'PENDING' ? 'badge-primary' : 'badge-success'}`}>{order.status}</span>
                                     </div>
-                                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem' }}>{s.jobTitle} • ${s.hourlyRate}/hr</p>
-                                    <small style={{ color: '#94a3b8' }}>{s.email} | {s.phone}</small>
+                                    <div style={{ marginBottom: '1rem', padding: '1rem', background: 'var(--slate-50)', borderRadius: 'var(--radius-sm)' }}>
+                                        {order.items.map((item, idx) => (
+                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                                                <span>{item.quantity}x {item.menuItem.name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                                        <span style={{ fontWeight: 700, fontSize: '1.2rem' }}>${order.total.toFixed(2)}</span>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            {order.status === 'PENDING' && (<>
+                                                <button className="btn btn-sm btn-primary" onClick={() => updateStatus(order.id, 'ACCEPTED')}>Accept</button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => updateStatus(order.id, 'REJECTED')}>Reject</button>
+                                            </>)}
+                                            {order.status === 'ACCEPTED' && <button className="btn btn-sm btn-primary" style={{ width: '100%' }} onClick={() => updateStatus(order.id, 'READY')}>Ready for Pickup</button>}
+                                            {order.status === 'READY' && <button className="btn btn-sm btn-success" style={{ width: '100%' }} onClick={() => updateStatus(order.id, 'COMPLETED')}>Complete</button>}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button className="btn-secondary btn-sm" style={{ width: 'auto' }} onClick={() => openModal('staff', s)}>Edit</button>
-                                    <button className="btn-danger btn-sm" style={{ width: 'auto' }} onClick={() => handleDelete(`/staff/${s.id}`, fetchStaff)}>Delete</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div style={{ marginTop: '2rem' }}>
-                        <h3>Job Areas</h3>
-                        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
-                            {jobAreas.map(ja => (
-                                <span key={ja.id} style={{ background: '#f8fafc', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', color: '#475569', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    {ja.name}
-                                    <button onClick={() => handleDelete(`/job-areas/${ja.id}`, fetchJobAreas)} className="btn-clear btn-sm" style={{ color: '#94a3b8', fontWeight: 'bold', fontSize: '1.1rem' }}>×</button>
-                                </span>
                             ))}
-                            <button className="btn-secondary" style={{ width: 'auto', borderRadius: '10px', padding: '0.5rem 1rem', fontSize: '0.85rem', border: '1px dashed var(--primary-color)', background: 'transparent', color: 'var(--primary-color)' }} onClick={() => openModal('jobArea')}>+ Add Area</button>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* ROSTER TAB */}
-            {activeTab === 'roster' && (
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2>Roster</h2>
-                        <div>
-                            <button className="btn-secondary" style={{ width: 'auto', marginRight: '1rem' }} onClick={() => openModal('shift')}>Add Shift</button>
-                            <button className="btn" style={{ width: 'auto' }} onClick={handlePublishRoster}>Publish Roster</button>
+                {/* MENU TAB */}
+                {activeTab === 'menu' && (
+                    <div className="animate-in">
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+                            <button className="btn btn-primary" onClick={() => openModal('menu')}>+ Add New Item</button>
+                        </div>
+                        <div className="grid-responsive">
+                            {menu.map(item => (
+                                <div key={item.id} className="card">
+                                    <div style={{ padding: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                                            <h3 style={{ margin: 0 }}>{item.name}</h3>
+                                            <span className={`badge ${item.available ? 'badge-success' : 'badge-warning'}`}>
+                                                {item.available ? 'Active' : 'Hidden'}
+                                            </span>
+                                        </div>
+                                        <p className="text-muted" style={{ fontSize: '0.9rem', minHeight: '3rem' }}>{item.description}</p>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
+                                            <span style={{ fontWeight: 700, fontSize: '1.25rem' }}>${item.price.toFixed(2)}</span>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button className="btn btn-sm btn-secondary" onClick={() => openModal('menu', item)}>Edit</button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(`/stores/menu/${item.id}`, fetchMenu)}>Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                    <div style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
-                        {shifts.map(shift => (
-                            <div key={shift.id} style={{ background: shift.published ? '#e8f5e9' : 'white', padding: '1rem', borderRadius: '8px', borderLeft: `5px solid ${shift.published ? 'green' : 'orange'}`, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 'bold' }}>{new Date(shift.startTime).toLocaleString()} - {new Date(shift.endTime).toLocaleTimeString()}</span>
-                                    <span>{shift.published ? 'Published' : 'Draft'}</span>
-                                </div>
-                                <p><strong>{shift.staff?.name}</strong> in {shift.jobArea?.name}</p>
-                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                    <button className="btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openModal('shift', shift)}>Edit</button>
-                                    <button className="btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleDelete(`/shifts/${shift.id}`, fetchShifts)}>Delete</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                )}
 
-            {/* OFFERS TAB */}
-            {activeTab === 'offers' && (
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2>Offer & Discounts</h2>
-                        <button className="btn" style={{ width: 'auto' }} onClick={() => openModal('offer')}>Add Offer</button>
-                    </div>
-                    <div className="grid-responsive fade-in" style={{ marginTop: '1rem' }}>
-                        {offers.map(offer => (
-                            <div key={offer.id} style={{ background: 'white', padding: '1.5rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', transition: 'var(--transition)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--secondary-color)' }}>{offer.code}</h3>
-                                    <span className={`status-badge ${offer.active ? 'active' : 'inactive'}`} style={{
-                                        padding: '0.25rem 0.5rem',
-                                        borderRadius: '12px',
-                                        fontSize: '0.8rem',
-                                        background: offer.active ? '#dcfce7' : '#f1f5f9',
-                                        color: offer.active ? '#166534' : '#64748b'
-                                    }}>{offer.active ? 'Active' : 'Inactive'}</span>
-                                </div>
-                                <p className="text-sm" style={{ color: '#64748B', marginBottom: '0.5rem' }}>{offer.description}</p>
-                                <p style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--primary-color)', margin: '0.5rem 0' }}>{offer.discountPercentage}% OFF</p>
-
-                                <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-                                    <button className="btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openModal('offer', offer)}>Edit</button>
-                                    <button className="btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleDelete(`/offers/${offer.id}`, fetchOffers)}>Delete</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* PROFILE TAB */}
-            {activeTab === 'profile' && store && (
-                <div className="fade-in" style={{ maxWidth: '600px', background: 'white', padding: '2.5rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-lg)' }}>
-                    <h2 style={{ marginBottom: '1.5rem', color: 'var(--secondary-color)' }}>Edit Store Profile</h2>
-                    <form onSubmit={handleSaveProfile}>
-                        <div className="form-group"><label>Store Name</label><input name="name" defaultValue={store.name} required /></div>
-                        <div className="form-group"><label>Address</label><input name="address" defaultValue={store.address} /></div>
-                        <div className="form-group"><label>Image URL</label><input name="imageUrl" defaultValue={store.imageUrl} /></div>
-                        <button className="btn" style={{ marginTop: '1rem' }}>Save Changes</button>
-                    </form>
-                </div>
-            )}
-
-            {/* MODAL */}
-            {isModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(5px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }} onClick={() => setIsModalOpen(false)}>
-                    <div className="fade-in" style={{ background: 'white', padding: '2rem', borderRadius: 'var(--radius)', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }} onClick={e => e.stopPropagation()}>
-                        <h3 style={{ marginBottom: '1.5rem', fontSize: '1.5rem', color: 'var(--secondary-color)' }}>{editingItem?.id ? 'Edit' : 'Add'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</h3>
-                        <form onSubmit={handleSave}>
-                            {modalType === 'menu' && (
-                                <>
-                                    <div className="form-group"><label>Name</label><input name="name" defaultValue={editingItem?.name} required /></div>
-                                    <div className="form-group"><label>Description</label><textarea name="description" defaultValue={editingItem?.description} rows="3" /></div>
-                                    <div className="form-group"><label>Price ($)</label><input name="price" type="number" step="0.01" defaultValue={editingItem?.price} required /></div>
-                                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><input type="checkbox" name="available" defaultChecked={editingItem?.available ?? true} style={{ width: 'auto' }} /> <label style={{ margin: 0, cursor: 'pointer' }}>Available</label></div>
-                                </>
-                            )}
-                            {modalType === 'staff' && (
-                                <>
-                                    <div className="form-group"><label>Name</label><input name="name" defaultValue={editingItem?.name} required /></div>
-                                    <div className="form-group"><label>Email</label><input name="email" type="email" defaultValue={editingItem?.email} /></div>
-                                    <div className="form-group"><label>Phone</label><input name="phone" defaultValue={editingItem?.phone} /></div>
-                                    <div className="form-group"><label>Job Title</label><input name="jobTitle" defaultValue={editingItem?.jobTitle} /></div>
-                                    <div className="form-group">
-                                        <label>Job Area</label>
-                                        <select name="jobAreaId" defaultValue={editingItem?.jobArea?.id}>
-                                            <option value="">Select Job Area</option>
-                                            {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
-                                        </select>
+                {/* STAFF TAB */}
+                {activeTab === 'staff' && (
+                    <div className="animate-in">
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+                            <button className="btn btn-primary" onClick={() => openModal('staff')}>+ Add Team Member</button>
+                        </div>
+                        <div className="grid-responsive">
+                            {staff.map(s => (
+                                <div key={s.id} className="card" style={{ padding: '1.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                                                {s.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{s.name}</h3>
+                                                <p className="text-muted" style={{ fontSize: '0.85rem' }}>{s.jobTitle}</p>
+                                            </div>
+                                        </div>
+                                        {s.jobArea && <span className="badge badge-primary">{s.jobArea.name}</span>}
                                     </div>
-                                    <div className="form-group"><label>Hourly Rate ($)</label><input name="hourlyRate" type="number" step="0.01" defaultValue={editingItem?.hourlyRate} /></div>
-                                </>
-                            )}
-                            {modalType === 'jobArea' && (
-                                <div className="form-group"><label>Area Name</label><input name="name" required /></div>
-                            )}
-                            {modalType === 'shift' && (
-                                <>
-                                    <div className="form-group">
-                                        <label>Staff</label>
-                                        <select name="staffId" defaultValue={editingItem?.staff?.id} required>
-                                            <option value="">Select Staff</option>
-                                            {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                        </select>
+                                    <div style={{ padding: '1rem', background: 'var(--slate-50)', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', fontSize: '0.9rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                            <span className="text-muted">Rate</span>
+                                            <span style={{ fontWeight: 600 }}>${s.hourlyRate}/hr</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="text-muted">Contact</span>
+                                            <span style={{ fontWeight: 600 }}>{s.phone}</span>
+                                        </div>
                                     </div>
-                                    <div className="form-group">
-                                        <label>Job Area</label>
-                                        <select name="jobAreaId" defaultValue={editingItem?.jobArea?.id} required>
-                                            <option value="">Select Area</option>
-                                            {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
-                                        </select>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button className="btn btn-sm btn-secondary" style={{ flex: 1 }} onClick={() => openModal('staff', s)}>Edit</button>
+                                        <button className="btn btn-sm btn-danger" style={{ flex: 1 }} onClick={() => handleDelete(`/staff/${s.id}`, fetchStaff)}>Delete</button>
                                     </div>
-                                    <div className="form-group"><label>Start Time</label><input name="startTime" type="datetime-local" defaultValue={editingItem?.startTime} required /></div>
-                                    <div className="form-group"><label>End Time</label><input name="endTime" type="datetime-local" defaultValue={editingItem?.endTime} required /></div>
-                                </>
-                            )}
-                            {modalType === 'offer' && (
-                                <>
-                                    <div className="form-group"><label>Code</label><input name="code" defaultValue={editingItem?.code} required /></div>
-                                    <div className="form-group"><label>Description</label><input name="description" defaultValue={editingItem?.description} /></div>
-                                    <div className="form-group"><label>Discount (%)</label><input name="discountPercentage" type="number" step="0.01" defaultValue={editingItem?.discountPercentage} required /></div>
-                                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><input type="checkbox" name="active" defaultChecked={editingItem?.active ?? true} style={{ width: 'auto' }} /> <label style={{ margin: 0, cursor: 'pointer' }}>Active</label></div>
-                                </>
-                            )}
-                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
-                                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)} style={{ flex: 1, background: '#F1F5F9', color: '#475569', border: 'none' }}>Cancel</button>
-                                <button className="btn" style={{ flex: 1 }}>Save</button>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ marginTop: '3rem' }}>
+                            <h3 style={{ marginBottom: '1rem' }}>Job Areas</h3>
+                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                {jobAreas.map(ja => (
+                                    <div key={ja.id} className="card" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: 'var(--radius-sm)' }}>
+                                        <span style={{ fontWeight: 600 }}>{ja.name}</span>
+                                        <button onClick={() => handleDelete(`/job-areas/${ja.id}`, fetchJobAreas)} className="btn-logout" style={{ padding: 0 }}>×</button>
+                                    </div>
+                                ))}
+                                <button className="btn btn-secondary btn-sm" style={{ borderStyle: 'dashed' }} onClick={() => openModal('jobArea')}>+ Add Area</button>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+
+                {/* ROSTER TAB */}
+                {activeTab === 'roster' && (
+                    <div className="animate-in">
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem' }}>
+                            <button className="btn btn-secondary" onClick={() => openModal('shift')}>+ Add New Shift</button>
+                            <button className="btn btn-primary" onClick={handlePublishRoster}>📢 Publish Roster</button>
+                        </div>
+                        <div style={{ display: 'grid', gap: '1.25rem' }}>
+                            {shifts.length === 0 ? (
+                                <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+                                    <p className="text-muted">No shifts scheduled for this week.</p>
+                                </div>
+                            ) : shifts.map(shift => (
+                                <div key={shift.id} className="card" style={{ borderLeft: `6px solid ${shift.published ? '#22c55e' : 'var(--primary)'}` }}>
+                                    <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                                            <div style={{ textAlign: 'center', minWidth: '80px' }}>
+                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--slate-500)', textTransform: 'uppercase' }}>
+                                                    {new Date(shift.startTime).toLocaleDateString([], { weekday: 'short' })}
+                                                </div>
+                                                <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>
+                                                    {new Date(shift.startTime).getDate()}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{shift.staff?.name}</h3>
+                                                <p className="text-muted">{shift.jobArea?.name} • {new Date(shift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(shift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                            <span className={`badge ${shift.published ? 'badge-success' : 'badge-primary'}`}>
+                                                {shift.published ? 'Published' : 'Draft'}
+                                            </span>
+                                            <button className="btn btn-sm btn-secondary" onClick={() => openModal('shift', shift)}>Edit</button>
+                                            <button className="btn btn-sm btn-danger" onClick={() => handleDelete(`/shifts/${shift.id}`, fetchShifts)}>×</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* OFFERS TAB */}
+                {activeTab === 'offers' && (
+                    <div className="animate-in">
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+                            <button className="btn btn-primary" onClick={() => openModal('offer')}>+ Create New Offer</button>
+                        </div>
+                        <div className="grid-responsive">
+                            {offers.map(offer => (
+                                <div key={offer.id} className="card" style={{ padding: '1.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1.25rem' }}>
+                                        <h3 style={{ margin: 0 }}>{offer.code}</h3>
+                                        <span className={`badge ${offer.active ? 'badge-success' : 'badge-warning'}`}>
+                                            {offer.active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
+                                    <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)', marginBottom: '0.5rem' }}>
+                                        {offer.discountPercentage}% <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--slate-400)' }}>OFF</span>
+                                    </div>
+                                    <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>{offer.description}</p>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button className="btn btn-sm btn-secondary" style={{ flex: 1 }} onClick={() => openModal('offer', offer)}>Edit</button>
+                                        <button className="btn btn-sm btn-danger" style={{ flex: 1 }} onClick={() => handleDelete(`/offers/${offer.id}`, fetchOffers)}>Delete</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* PROFILE TAB */}
+                {activeTab === 'profile' && store && (
+                    <div className="animate-in">
+                        <div className="card" style={{ maxWidth: '600px', padding: '2.5rem' }}>
+                            <h2 style={{ marginBottom: '2rem' }}>Edit Store Profile</h2>
+                            <form onSubmit={handleSaveProfile}>
+                                <div className="form-group">
+                                    <label className="label">Store Name</label>
+                                    <input className="input" name="name" defaultValue={store.name} required />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Address</label>
+                                    <input className="input" name="address" defaultValue={store.address} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Image URL</label>
+                                    <input className="input" name="imageUrl" defaultValue={store.imageUrl} />
+                                </div>
+                                <button className="btn btn-primary" style={{ marginTop: '1rem', width: '200px' }}>Save Profile Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL */}
+                {isModalOpen && (
+                    <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+                        <div className="modal animate-in" style={{ padding: '2.5rem', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                                <h3 style={{ margin: 0, fontSize: '1.5rem' }}>{editingItem?.id ? 'Edit' : 'Add'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</h3>
+                                <button onClick={() => setIsModalOpen(false)} className="btn-logout" style={{ fontSize: '1.5rem', padding: 0 }}>×</button>
+                            </div>
+
+                            <form onSubmit={handleSave}>
+                                {modalType === 'menu' && (
+                                    <>
+                                        <div className="form-group"><label className="label">Item Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
+                                        <div className="form-group"><label className="label">Description</label><textarea className="input" name="description" defaultValue={editingItem?.description} rows="3" /></div>
+                                        <div className="form-group"><label className="label">Price ($)</label><input className="input" name="price" type="number" step="0.01" defaultValue={editingItem?.price} required /></div>
+                                        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <input type="checkbox" name="available" defaultChecked={editingItem?.available ?? true} style={{ width: '20px', height: '20px' }} />
+                                            <label className="label" style={{ margin: 0 }}>Item is currently available</label>
+                                        </div>
+                                    </>
+                                )}
+                                {modalType === 'staff' && (
+                                    <>
+                                        <div className="form-group"><label className="label">Full Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
+                                        <div className="grid-responsive" style={{ gap: '1rem', marginTop: 0 }}>
+                                            <div className="form-group"><label className="label">Email</label><input className="input" name="email" type="email" defaultValue={editingItem?.email} /></div>
+                                            <div className="form-group"><label className="label">Phone</label><input className="input" name="phone" defaultValue={editingItem?.phone} /></div>
+                                        </div>
+                                        <div className="form-group"><label className="label">Job Title</label><input className="input" name="jobTitle" defaultValue={editingItem?.jobTitle} /></div>
+                                        <div className="form-group">
+                                            <label className="label">Job Area</label>
+                                            <select className="input" name="jobAreaId" defaultValue={editingItem?.jobArea?.id}>
+                                                <option value="">Select Job Area</option>
+                                                {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group"><label className="label">Hourly Rate ($)</label><input className="input" name="hourlyRate" type="number" step="0.01" defaultValue={editingItem?.hourlyRate} /></div>
+                                    </>
+                                )}
+                                {modalType === 'jobArea' && (
+                                    <div className="form-group"><label className="label">Area Name</label><input className="input" name="name" placeholder="e.g. Kitchen, Floor, Bar" required /></div>
+                                )}
+                                {modalType === 'shift' && (
+                                    <>
+                                        <div className="form-group">
+                                            <label className="label">Staff Member</label>
+                                            <select className="input" name="staffId" defaultValue={editingItem?.staff?.id} required>
+                                                <option value="">Select Staff</option>
+                                                {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="label">Job Area</label>
+                                            <select className="input" name="jobAreaId" defaultValue={editingItem?.jobArea?.id} required>
+                                                <option value="">Select Area</option>
+                                                {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group"><label className="label">Start Time</label><input className="input" name="startTime" type="datetime-local" defaultValue={editingItem?.startTime?.slice(0, 16)} required /></div>
+                                        <div className="form-group"><label className="label">End Time</label><input className="input" name="endTime" type="datetime-local" defaultValue={editingItem?.endTime?.slice(0, 16)} required /></div>
+                                    </>
+                                )}
+                                {modalType === 'offer' && (
+                                    <>
+                                        <div className="form-group"><label className="label">Promo Code</label><input className="input" name="code" defaultValue={editingItem?.code} required /></div>
+                                        <div className="form-group"><label className="label">Description</label><input className="input" name="description" defaultValue={editingItem?.description} /></div>
+                                        <div className="form-group"><label className="label">Discount %</label><input className="input" name="discountPercentage" type="number" defaultValue={editingItem?.discountPercentage} required /></div>
+                                        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <input type="checkbox" name="active" defaultChecked={editingItem?.active ?? true} style={{ width: '20px', height: '20px' }} />
+                                            <label className="label" style={{ margin: 0 }}>Offer is active</label>
+                                        </div>
+                                    </>
+                                )}
+                                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                                    <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>{editingItem?.id ? 'Update' : 'Create'}</button>
+                                    <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </main>
         </div>
     );
 };
