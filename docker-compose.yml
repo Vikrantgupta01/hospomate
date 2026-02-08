@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:h2:mem:hospomate;DB_CLOSE_DELAY=-1
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SPRING_DATASOURCE_USERNAME=sa
       - SPRING_DATASOURCE_PASSWORD=password
     networks:

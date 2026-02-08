@@ -5,6 +5,7 @@ import com.hospomate.repository.ShiftRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,9 +35,12 @@ public class ShiftController {
     }
 
     @GetMapping("/store/{storeId}")
-    public List<Shift> getStoreShifts(@PathVariable long storeId) {
-        // Assuming we need a custom query in repository or filter.
-        // For simplicity, let's add finding by Store via Staff.
+    public List<Shift> getStoreShifts(@PathVariable long storeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        if (start != null && end != null) {
+            return shiftRepository.findByStaff_Store_IdAndStartTimeBetween(storeId, start, end);
+        }
         return shiftRepository.findByStaff_Store_Id(storeId);
     }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../api';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -150,16 +151,89 @@ const StoreDashboard = () => {
             });
             setIsModalOpen(false);
             fetchInvoices();
-            alert("Invoice uploaded and parsing initiated!");
+            alert("Invoice uploaded and parsing initiated! Check the list shortly.");
         } catch (err) { console.error(err); alert("Upload failed."); }
+    };
+
+    const handleApproveInvoice = async (invoiceId) => {
+        try {
+            await api.put(`/stores/${user.storeId}/invoices/${invoiceId}/status?status=APPROVED`);
+            setIsModalOpen(false);
+            fetchInvoices();
+            // alert("Invoice Approved!"); 
+        } catch (err) { console.error(err); alert("Failed to approve"); }
     };
 
     if (loading || !user) return <div>Loading...</div>;
 
     const openModal = (type, item = {}) => {
+        console.log("Opening Modal:", type, item);
         setModalType(type);
         setEditingItem(item);
         setIsModalOpen(true);
+    };
+
+    const renderInvoiceReviewContent = () => {
+        try {
+            console.log("Rendering Invoice Review Content. Item:", editingItem);
+            if (!editingItem) return <div>No invoice data found.</div>;
+
+            let details = {};
+            try {
+                details = editingItem.rawJsonData ? JSON.parse(editingItem.rawJsonData) : {};
+            } catch (e) {
+                console.error("JSON Parse Error:", e);
+                details = {};
+            }
+            const items = details.items || [];
+
+            return (
+                <div className="animate-in">
+                    <div className="grid-responsive" style={{ marginBottom: '2rem', background: 'var(--slate-50)', padding: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
+                        <div>
+                            <label className="label" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>Supplier</label>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{details.supplier || 'Unknown'}</div>
+                        </div>
+                        <div>
+                            <label className="label" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>Date</label>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{details.date || 'Unknown'}</div>
+                        </div>
+                        <div>
+                            <label className="label" style={{ fontSize: '0.8rem', textTransform: 'uppercase' }}>Total Amount</label>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)' }}>${(details.total || 0).toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <h4 style={{ marginBottom: '1rem' }}>Line Items</h4>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--slate-200)', borderRadius: 'var(--radius-sm)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                            <thead style={{ background: 'var(--slate-50)', position: 'sticky', top: 0 }}>
+                                <tr>
+                                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>Item</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'center' }}>Qty</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Price</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item, i) => (
+                                    <tr key={i} style={{ borderBottom: '1px solid var(--slate-100)' }}>
+                                        <td style={{ padding: '0.75rem' }}>{item.name}</td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'center' }}>{item.quantity}</td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'right' }}>${item.price?.toFixed(2)}</td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'right' }}>${item.total?.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                                {items.length === 0 && <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: 'var(--slate-400)' }}>No items found</td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        } catch (err) {
+            console.error("Error rendering invoice review content:", err);
+            return <div className="text-danger">Error loading invoice details.</div>;
+        }
     };
 
     return (
@@ -208,6 +282,8 @@ const StoreDashboard = () => {
             </aside>
 
             <main className="main-content">
+
+
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
                     <div>
                         <h1 style={{ fontSize: '2.2rem', color: 'var(--slate-900)' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
@@ -342,6 +418,9 @@ const StoreDashboard = () => {
                     </div>
                 )}
 
+                import RosterMatrix from '../components/RosterMatrix'; // Add to top imports
+
+                // ... in Roster Tab section ...
                 {/* ROSTER TAB */}
                 {activeTab === 'roster' && (
                     <div className="animate-in">
@@ -349,39 +428,13 @@ const StoreDashboard = () => {
                             <button className="btn btn-secondary" onClick={() => openModal('shift')}>+ Add New Shift</button>
                             <button className="btn btn-primary" onClick={handlePublishRoster}>📢 Publish Roster</button>
                         </div>
-                        <div style={{ display: 'grid', gap: '1.25rem' }}>
-                            {shifts.length === 0 ? (
-                                <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-                                    <p className="text-muted">No shifts scheduled for this week.</p>
-                                </div>
-                            ) : shifts.map(shift => (
-                                <div key={shift.id} className="card" style={{ borderLeft: `6px solid ${shift.published ? '#22c55e' : 'var(--primary)'}` }}>
-                                    <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                                            <div style={{ textAlign: 'center', minWidth: '80px' }}>
-                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--slate-500)', textTransform: 'uppercase' }}>
-                                                    {new Date(shift.startTime).toLocaleDateString([], { weekday: 'short' })}
-                                                </div>
-                                                <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-                                                    {new Date(shift.startTime).getDate()}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{shift.staff?.name}</h3>
-                                                <p className="text-muted">{shift.jobArea?.name} • {new Date(shift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(shift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                            </div>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                            <span className={`badge ${shift.published ? 'badge-success' : 'badge-primary'}`}>
-                                                {shift.published ? 'Published' : 'Draft'}
-                                            </span>
-                                            <button className="btn btn-sm btn-secondary" onClick={() => openModal('shift', shift)}>Edit</button>
-                                            <button className="btn btn-sm btn-danger" onClick={() => handleDelete(`/shifts/${shift.id}`, fetchShifts)}>×</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+
+                        <RosterMatrix
+                            storeId={user.storeId}
+                            staff={staff}
+                            onEditShift={(shift) => openModal('shift', shift)}
+                            onDeleteShift={(id) => handleDelete(`/shifts/${id}`, fetchShifts)}
+                        />
                     </div>
                 )}
 
@@ -452,8 +505,21 @@ const StoreDashboard = () => {
                                         <tr key={inv.id} style={{ borderBottom: '1px solid var(--slate-50)' }}>
                                             <td style={{ padding: '1rem', fontWeight: 600 }}>{inv.supplierName || 'Extracting...'}</td>
                                             <td style={{ padding: '1rem' }}>{inv.invoiceDate}</td>
-                                            <td style={{ padding: '1rem' }}><span className="badge badge-primary">{inv.status}</span></td>
-                                            <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 800 }}>${inv.totalAmount?.toFixed(2)}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span className={`badge ${inv.status === 'APPROVED' ? 'badge-success' : 'badge-primary'}`}>{inv.status}</span>
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 800 }}>
+                                                ${inv.totalAmount?.toFixed(2)}{' '}
+                                                {inv.status === 'PENDING_REVIEW' && (
+                                                    <button
+                                                        className="btn btn-sm btn-secondary"
+                                                        style={{ marginLeft: '1rem', border: '1px solid var(--slate-300)' }}
+                                                        onClick={() => openModal('invoice-review', inv)}
+                                                    >
+                                                        Review
+                                                    </button>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                     {invoices.length === 0 && (
@@ -488,117 +554,134 @@ const StoreDashboard = () => {
                     </div>
                 )}
 
-                {/* MODAL */}
-                {isModalOpen && (
-                    <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-                        <div className="modal animate-in" style={{ padding: '2.5rem', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h3 style={{ margin: 0, fontSize: '1.5rem' }}>{editingItem?.id ? 'Edit' : 'Add'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</h3>
-                                <button onClick={() => setIsModalOpen(false)} className="btn-logout" style={{ fontSize: '1.5rem', padding: 0 }}>×</button>
-                            </div>
-
-                            <form onSubmit={modalType === 'invoice' ? handleInvoiceUpload : handleSave}>
-                                {modalType === 'menu' && (
-                                    <>
-                                        <div className="form-group"><label className="label">Item Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
-                                        <div className="form-group"><label className="label">Description</label><textarea className="input" name="description" defaultValue={editingItem?.description} rows="3" /></div>
-                                        <div className="form-group"><label className="label">Price ($)</label><input className="input" name="price" type="number" step="0.01" defaultValue={editingItem?.price} required /></div>
-                                        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <input type="checkbox" name="available" defaultChecked={editingItem?.available ?? true} style={{ width: '20px', height: '20px' }} />
-                                            <label className="label" style={{ margin: 0 }}>Item is currently available</label>
-                                        </div>
-                                    </>
-                                )}
-                                {modalType === 'staff' && (
-                                    <>
-                                        <div className="form-group"><label className="label">Full Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
-                                        <div className="grid-responsive" style={{ gap: '1rem', marginTop: 0 }}>
-                                            <div className="form-group"><label className="label">Email</label><input className="input" name="email" type="email" defaultValue={editingItem?.email} /></div>
-                                            <div className="form-group"><label className="label">Phone</label><input className="input" name="phone" defaultValue={editingItem?.phone} /></div>
-                                        </div>
-                                        <div className="form-group"><label className="label">Job Title</label><input className="input" name="jobTitle" defaultValue={editingItem?.jobTitle} /></div>
-                                        <div className="form-group">
-                                            <label className="label">Job Area</label>
-                                            <select className="input" name="jobAreaId" defaultValue={editingItem?.jobArea?.id}>
-                                                <option value="">Select Job Area</option>
-                                                {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="form-group"><label className="label">Hourly Rate ($)</label><input className="input" name="hourlyRate" type="number" step="0.01" defaultValue={editingItem?.hourlyRate} /></div>
-                                    </>
-                                )}
-                                {modalType === 'jobArea' && (
-                                    <div className="form-group"><label className="label">Area Name</label><input className="input" name="name" placeholder="e.g. Kitchen, Floor, Bar" required /></div>
-                                )}
-                                {modalType === 'shift' && (
-                                    <>
-                                        <div className="form-group">
-                                            <label className="label">Staff Member</label>
-                                            <select className="input" name="staffId" defaultValue={editingItem?.staff?.id} required>
-                                                <option value="">Select Staff</option>
-                                                {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="label">Job Area</label>
-                                            <select className="input" name="jobAreaId" defaultValue={editingItem?.jobArea?.id} required>
-                                                <option value="">Select Area</option>
-                                                {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="form-group"><label className="label">Start Time</label><input className="input" name="startTime" type="datetime-local" defaultValue={editingItem?.startTime?.slice(0, 16)} required /></div>
-                                        <div className="form-group"><label className="label">End Time</label><input className="input" name="endTime" type="datetime-local" defaultValue={editingItem?.endTime} required /></div>
-                                    </>
-                                )}
-                                {modalType === 'invoice' && (
-                                    <div className="animate-in" style={{ textAlign: 'center' }}>
-                                        <div style={{
-                                            border: '2px dashed var(--slate-200)',
-                                            padding: '4rem 2rem',
-                                            borderRadius: 'var(--radius-lg)',
-                                            backgroundColor: 'var(--slate-50)',
-                                            marginBottom: '2rem',
-                                            transition: 'all 0.3s ease'
-                                        }}>
-                                            <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>📄</div>
-                                            <h4 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Drop your invoice here</h4>
-                                            <p style={{ color: 'var(--slate-500)', marginBottom: '2rem' }}>Only PDF files are supported for AI parsing</p>
-
-                                            <input
-                                                type="file"
-                                                name="file"
-                                                accept="application/pdf"
-                                                className="input"
-                                                style={{ border: 'none', background: 'white', padding: '1rem', cursor: 'pointer' }}
-                                                required
-                                            />
-                                        </div>
-                                        <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: '1.6' }}>
-                                            <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Claude 3.5 AI</span> will automatically extract supplier details, <br />
-                                            dates, and itemized costs into your records.
-                                        </p>
-                                    </div>
-                                )}
-                                {modalType === 'offer' && (
-                                    <>
-                                        <div className="form-group"><label className="label">Promo Code</label><input className="input" name="code" defaultValue={editingItem?.code} required /></div>
-                                        <div className="form-group"><label className="label">Description</label><input className="input" name="description" defaultValue={editingItem?.description} /></div>
-                                        <div className="form-group"><label className="label">Discount %</label><input className="input" name="discountPercentage" type="number" defaultValue={editingItem?.discountPercentage} required /></div>
-                                        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <input type="checkbox" name="active" defaultChecked={editingItem?.active ?? true} style={{ width: '20px', height: '20px' }} />
-                                            <label className="label" style={{ margin: 0 }}>Offer is active</label>
-                                        </div>
-                                    </>
-                                )}
-                                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                                    <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>{editingItem?.id ? 'Update' : 'Create'}</button>
-                                    <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>Cancel</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
             </main>
+
+            {/* MODAL PORTAL */}
+            {isModalOpen && createPortal(
+                <div className="modal-overlay" style={{ zIndex: 99999 }} onClick={() => setIsModalOpen(false)}>
+                    <div className="modal animate-in" style={{ padding: '2.5rem', maxHeight: '90vh', overflowY: 'auto', maxWidth: modalType === 'invoice-review' ? '800px' : '500px' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>
+                                {modalType === 'invoice-review' ? 'Review Invoice' :
+                                    modalType === 'test' ? 'Test Modal' :
+                                        (editingItem?.id ? 'Edit' : 'Add') + ' ' + modalType.charAt(0).toUpperCase() + modalType.slice(1)}
+                            </h3>
+                            <button onClick={() => setIsModalOpen(false)} className="btn-logout" style={{ fontSize: '1.5rem', padding: 0 }}>×</button>
+                        </div>
+
+                        <form onSubmit={modalType === 'invoice' ? handleInvoiceUpload : handleSave}>
+
+                            {modalType === 'menu' && (
+                                <>
+                                    <div className="form-group"><label className="label">Item Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
+                                    <div className="form-group"><label className="label">Description</label><textarea className="input" name="description" defaultValue={editingItem?.description} rows="3" /></div>
+                                    <div className="form-group"><label className="label">Price ($)</label><input className="input" name="price" type="number" step="0.01" defaultValue={editingItem?.price} required /></div>
+                                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <input type="checkbox" name="available" defaultChecked={editingItem?.available ?? true} style={{ width: '20px', height: '20px' }} />
+                                        <label className="label" style={{ margin: 0 }}>Item is currently available</label>
+                                    </div>
+                                </>
+                            )}
+                            {modalType === 'staff' && (
+                                <>
+                                    <div className="form-group"><label className="label">Full Name</label><input className="input" name="name" defaultValue={editingItem?.name} required /></div>
+                                    <div className="grid-responsive" style={{ gap: '1rem', marginTop: 0 }}>
+                                        <div className="form-group"><label className="label">Email</label><input className="input" name="email" type="email" defaultValue={editingItem?.email} /></div>
+                                        <div className="form-group"><label className="label">Phone</label><input className="input" name="phone" defaultValue={editingItem?.phone} /></div>
+                                    </div>
+                                    <div className="form-group"><label className="label">Job Title</label><input className="input" name="jobTitle" defaultValue={editingItem?.jobTitle} /></div>
+                                    <div className="form-group">
+                                        <label className="label">Job Area</label>
+                                        <select className="input" name="jobAreaId" defaultValue={editingItem?.jobArea?.id}>
+                                            <option value="">Select Job Area</option>
+                                            {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group"><label className="label">Hourly Rate ($)</label><input className="input" name="hourlyRate" type="number" step="0.01" defaultValue={editingItem?.hourlyRate} /></div>
+                                </>
+                            )}
+                            {modalType === 'jobArea' && (
+                                <div className="form-group"><label className="label">Area Name</label><input className="input" name="name" placeholder="e.g. Kitchen, Floor, Bar" required /></div>
+                            )}
+                            {modalType === 'shift' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="label">Staff Member</label>
+                                        <select className="input" name="staffId" defaultValue={editingItem?.staff?.id} required>
+                                            <option value="">Select Staff</option>
+                                            {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="label">Job Area</label>
+                                        <select className="input" name="jobAreaId" defaultValue={editingItem?.jobArea?.id} required>
+                                            <option value="">Select Area</option>
+                                            {jobAreas.map(ja => <option key={ja.id} value={ja.id}>{ja.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group"><label className="label">Start Time</label><input className="input" name="startTime" type="datetime-local" defaultValue={editingItem?.startTime?.slice(0, 16)} required /></div>
+                                    <div className="form-group"><label className="label">End Time</label><input className="input" name="endTime" type="datetime-local" defaultValue={editingItem?.endTime} required /></div>
+                                </>
+                            )}
+                            {modalType === 'invoice' && (
+                                <div className="animate-in" style={{ textAlign: 'center' }}>
+                                    <div style={{
+                                        border: '2px dashed var(--slate-200)',
+                                        padding: '4rem 2rem',
+                                        borderRadius: 'var(--radius-lg)',
+                                        backgroundColor: 'var(--slate-50)',
+                                        marginBottom: '2rem',
+                                        transition: 'all 0.3s ease'
+                                    }}>
+                                        <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>📄</div>
+                                        <h4 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Drop your invoice here</h4>
+                                        <p style={{ color: 'var(--slate-500)', marginBottom: '2rem' }}>Only PDF files are supported for AI parsing</p>
+
+                                        <input
+                                            type="file"
+                                            name="file"
+                                            accept="application/pdf"
+                                            className="input"
+                                            style={{ border: 'none', background: 'white', padding: '1rem', cursor: 'pointer' }}
+                                            required
+                                        />
+                                    </div>
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: '1.6' }}>
+                                        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Google Gemini AI</span> will automatically extract supplier details, <br />
+                                        dates, and itemized costs into your records.
+                                    </p>
+                                </div>
+                            )}
+                            {modalType === 'invoice-review' && renderInvoiceReviewContent()}
+                            {modalType === 'offer' && (
+                                <>
+                                    <div className="form-group"><label className="label">Promo Code</label><input className="input" name="code" defaultValue={editingItem?.code} required /></div>
+                                    <div className="form-group"><label className="label">Description</label><input className="input" name="description" defaultValue={editingItem?.description} /></div>
+                                    <div className="form-group"><label className="label">Discount %</label><input className="input" name="discountPercentage" type="number" defaultValue={editingItem?.discountPercentage} required /></div>
+                                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <input type="checkbox" name="active" defaultChecked={editingItem?.active ?? true} style={{ width: '20px', height: '20px' }} />
+                                        <label className="label" style={{ margin: 0 }}>Offer is active</label>
+                                    </div>
+                                </>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                                {modalType === 'invoice-review' ? (
+                                    <button type="button" className="btn btn-success" style={{ flex: 2 }} onClick={() => handleApproveInvoice(editingItem.id)}>
+                                        ✅ Confirm & Approve
+                                    </button>
+                                ) : (
+                                    <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
+                                        {editingItem?.id ? 'Update' : 'Create'}
+                                    </button>
+                                )}
+                                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

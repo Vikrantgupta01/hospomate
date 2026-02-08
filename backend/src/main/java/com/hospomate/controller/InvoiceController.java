@@ -34,4 +34,18 @@ public class InvoiceController {
     public ResponseEntity<List<InvoiceCost>> getInvoices(@PathVariable Long storeId) {
         return ResponseEntity.ok(repository.findByStoreId(storeId));
     }
+
+    @PutMapping("/{invoiceId}/status")
+    public ResponseEntity<InvoiceCost> updateStatus(
+            @PathVariable Long storeId,
+            @PathVariable Long invoiceId,
+            @RequestParam String status) {
+
+        return repository.findById(invoiceId)
+                .map(invoice -> {
+                    invoice.setStatus(status);
+                    return ResponseEntity.ok(repository.save(invoice));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

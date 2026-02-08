@@ -1,5 +1,7 @@
 package com.hospomate.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospomate.model.InvoiceCost;
 import com.hospomate.repository.InvoiceCostRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,28 +9,33 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class InvoiceParserService {
 
-    private final ChatModel chatModel;
     private final InvoiceCostRepository repository;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${spring.ai.anthropic.api-key:UNSET}")
+    @Value("${gemini.api.key:UNSET}")
     private String apiKey;
+
+    private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
 
     public InvoiceCost parseAndSaveInvoice(Long storeId, MultipartFile file) throws IOException {
         log.info("Starting invoice parse for storeId: {}, file: {}", storeId, file.getOriginalFilename());
@@ -36,10 +43,10 @@ public class InvoiceParserService {
 
         String jsonResponse;
         if ("UNSET".equals(apiKey)) {
-            log.warn("Anthropic API Key not set. Using mock parsing response.");
-            jsonResponse = mockClaudeResponse(text);
+            log.warn("Gemini API Key not set. Using fallback heuristic parser.");
+            jsonResponse = parseWithHeuristic(text);
         } else {
-            jsonResponse = callClaudeForParsing(text);
+            jsonResponse = callGeminiForParsing(text);
         }
 
         InvoiceCost cost = new InvoiceCost();
@@ -48,24 +55,19 @@ public class InvoiceParserService {
         cost.setRawJsonData(jsonResponse);
         cost.setStatus("PENDING_REVIEW");
 
-        // Simple heuristic extraction from JSON for the main fields
-        // In a real app, we'd use a JSON parser (Jackson) here
         try {
-            if (jsonResponse.contains("\"total\"")) {
-                String sub = jsonResponse.substring(jsonResponse.indexOf("\"total\"") + 7);
-                String val = sub.substring(sub.indexOf(":") + 1, sub.indexOf(",")).trim();
-                cost.setTotalAmount(Double.parseDouble(val));
+            JsonNode root = objectMapper.readTree(jsonResponse);
+            if (root.has("total")) {
+                cost.setTotalAmount(root.get("total").asDouble());
             }
-            if (jsonResponse.contains("\"supplier\"")) {
-                String sub = jsonResponse.substring(jsonResponse.indexOf("\"supplier\"") + 10);
-                String val = sub.substring(sub.indexOf("\"") + 1, sub.lastIndexOf("\"")).trim();
-                cost.setSupplierName(val);
+            if (root.has("supplier")) {
+                cost.setSupplierName(root.get("supplier").asText());
             }
         } catch (Exception e) {
-            log.error("Failed to parse summary fields from Claude response", e);
+            log.error("Failed to parse summary fields from response", e);
         }
 
-        cost.setInvoiceDate(LocalDate.now()); // Fallback to upload date
+        cost.setInvoiceDate(LocalDate.now());
 
         return repository.save(cost);
     }
@@ -77,30 +79,73 @@ public class InvoiceParserService {
         }
     }
 
-    private String callClaudeForParsing(String invoiceText) {
-        String systemPrompt = """
-                You are an expert hospitality accountant. Extract data from the following invoice text.
-                Return ONLY a valid JSON object with these keys:
-                supplier (string), date (string), total (number), items (array of {name, quantity, price, total}).
-                If data is missing, use null.
-                """;
+    private String callGeminiForParsing(String invoiceText) {
+        try {
+            String promptText = """
+                    You are an expert hospitality accountant. Extract data from the following invoice text.
+                    Return ONLY a valid JSON object (no markdown formatting, no backticks) with these keys:
+                    supplier (string), date (string yyyy-MM-dd), total (number), items (array of {name, quantity, price, total}).
 
-        UserMessage userMessage = new UserMessage(invoiceText);
-        ChatResponse response = chatModel.call(new Prompt(List.of(new UserMessage(systemPrompt), userMessage)));
-        return response.getResult().getOutput().getContent();
+                    INVOICE TEXT:
+                    """
+                    + invoiceText;
+
+            // payload structure for Gemini
+            Map<String, Object> part = new HashMap<>();
+            part.put("text", promptText);
+
+            Map<String, Object> content = new HashMap<>();
+            content.put("parts", List.of(part));
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("contents", List.of(content));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+            String url = GEMINI_URL + apiKey;
+            String response = restTemplate.postForObject(url, entity, String.class);
+
+            // Parse response to get the 'text' field from candidates
+            JsonNode root = objectMapper.readTree(response);
+            String resultText = root.path("candidates").get(0).path("content").path("parts").get(0).path("text")
+                    .asText();
+
+            // Cleanup markdown if present
+            return resultText.replaceAll("```json", "").replaceAll("```", "").trim();
+
+        } catch (Exception e) {
+            log.error("Error calling Gemini API", e);
+            return parseWithHeuristic(invoiceText);
+        }
     }
 
-    private String mockClaudeResponse(String text) {
-        return """
-                {
-                  "supplier": "Mock Wholesaler Co.",
-                  "date": "2024-05-20",
-                  "total": 145.50,
-                  "items": [
-                    {"name": "Organic Milk 2L", "quantity": 10, "price": 4.50, "total": 45.00},
-                    {"name": "Coffee Beans 1kg", "quantity": 5, "price": 20.10, "total": 100.50}
-                  ]
-                }
-                """;
+    private String parseWithHeuristic(String text) {
+        // Fallback or "Heuristic" mode if API fails or key is missing
+        // This is a very basic fallback just to return valid JSON
+        Map<String, Object> fallback = new HashMap<>();
+
+        // Try to find total
+        double total = 0.0;
+        try {
+            // Simple regex for total could go here, but keeping it simple for now
+            if (text.toLowerCase().contains("total")) {
+                fallback.put("extracted_note", "Found 'total' keyword but heuristics are limited.");
+            }
+        } catch (Exception ignored) {
+        }
+
+        fallback.put("supplier", "Unknown Supplier (Check PDF)");
+        fallback.put("date", LocalDate.now().toString());
+        fallback.put("total", total);
+        fallback.put("items", List.of());
+
+        try {
+            return objectMapper.writeValueAsString(fallback);
+        } catch (Exception e) {
+            return "{}";
+        }
     }
 }
