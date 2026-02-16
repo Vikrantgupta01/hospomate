@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import api from '../api';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import RosterMatrix from '../components/RosterMatrix';
+import RosterReport from '../components/RosterReport';
 
 const StoreDashboard = () => {
     const { user, logout, loading } = useContext(AuthContext);
@@ -21,6 +23,7 @@ const StoreDashboard = () => {
     const [editingItem, setEditingItem] = useState(null); // For Menu, Staff, Shift, Offer
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState(''); // 'menu', 'staff', 'shift', 'jobArea', 'offer'
+    const [showReport, setShowReport] = useState(false);
 
     const navigate = useNavigate();
 
@@ -418,23 +421,28 @@ const StoreDashboard = () => {
                     </div>
                 )}
 
-                import RosterMatrix from '../components/RosterMatrix'; // Add to top imports
 
-                // ... in Roster Tab section ...
                 {/* ROSTER TAB */}
                 {activeTab === 'roster' && (
                     <div className="animate-in">
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem' }}>
+                            <button className="btn btn-secondary" onClick={() => setShowReport(!showReport)}>
+                                {showReport ? 'Show Roster View' : '📊 View Report'}
+                            </button>
                             <button className="btn btn-secondary" onClick={() => openModal('shift')}>+ Add New Shift</button>
                             <button className="btn btn-primary" onClick={handlePublishRoster}>📢 Publish Roster</button>
                         </div>
 
-                        <RosterMatrix
-                            storeId={user.storeId}
-                            staff={staff}
-                            onEditShift={(shift) => openModal('shift', shift)}
-                            onDeleteShift={(id) => handleDelete(`/shifts/${id}`, fetchShifts)}
-                        />
+                        {showReport ? (
+                            <RosterReport storeId={user?.storeId} />
+                        ) : (
+                            <RosterMatrix
+                                storeId={user.storeId}
+                                staff={staff}
+                                onEditShift={(shift) => openModal('shift', shift)}
+                                onDeleteShift={(id) => handleDelete(`/shifts/${id}`, fetchShifts)}
+                            />
+                        )}
                     </div>
                 )}
 

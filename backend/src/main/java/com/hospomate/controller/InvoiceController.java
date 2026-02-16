@@ -3,7 +3,6 @@ package com.hospomate.controller;
 import com.hospomate.model.InvoiceCost;
 import com.hospomate.service.InvoiceParserService;
 import com.hospomate.repository.InvoiceCostRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,11 +11,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/stores/{storeId}/invoices")
-@RequiredArgsConstructor
 public class InvoiceController {
 
     private final InvoiceParserService parserService;
     private final InvoiceCostRepository repository;
+
+    public InvoiceController(InvoiceParserService parserService, InvoiceCostRepository repository) {
+        this.parserService = parserService;
+        this.repository = repository;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<InvoiceCost> uploadInvoice(

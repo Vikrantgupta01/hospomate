@@ -34,7 +34,7 @@ const RosterMatrix = ({ storeId, staff, onEditShift, onDeleteShift }) => {
             // Send ISO strings
             const startStr = start.toISOString();
             const endStr = end.toISOString();
-            const res = await api.get(`/shifts/store/${storeId}?start=${startStr}&end=${endStr}`);
+            const res = await api.get(`/shifts/comparison/${storeId}?start=${startStr}&end=${endStr}`);
             setShifts(res.data);
         } catch (err) {
             console.error("Failed to fetch roster", err);
@@ -49,7 +49,8 @@ const RosterMatrix = ({ storeId, staff, onEditShift, onDeleteShift }) => {
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
     const getShiftsForCell = (staffId, date) => {
-        return shifts.filter(s => {
+        return shifts.filter(dto => {
+            const s = dto.scheduledShift;
             const sDate = new Date(s.startTime);
             return s.staff?.id === staffId &&
                 sDate.getDate() === date.getDate() &&
@@ -59,6 +60,7 @@ const RosterMatrix = ({ storeId, staff, onEditShift, onDeleteShift }) => {
     };
 
     const formatTime = (isoString) => {
+        if (!isoString) return '--:--';
         return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
@@ -100,27 +102,44 @@ const RosterMatrix = ({ storeId, staff, onEditShift, onDeleteShift }) => {
                                     const cellShifts = getShiftsForCell(s.id, day);
                                     return (
                                         <td key={day.toISOString()} style={{ padding: '0.5rem', borderLeft: '1px solid var(--slate-100)', verticalAlign: 'top', height: '100px', background: cellShifts.length > 0 ? 'var(--slate-50)' : 'white' }}>
-                                            {cellShifts.map(shift => (
-                                                <div
-                                                    key={shift.id}
-                                                    className="shift-card"
-                                                    style={{
-                                                        background: 'white',
-                                                        border: `1px solid ${shift.published ? '#22c55e' : 'var(--primary)'}`,
-                                                        borderLeftWidth: '4px',
-                                                        padding: '0.4rem',
-                                                        borderRadius: '4px',
-                                                        marginBottom: '0.4rem',
-                                                        fontSize: '0.8rem',
-                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    onClick={() => onEditShift && onEditShift(shift)}
-                                                >
-                                                    <div style={{ fontWeight: 700 }}>{formatTime(shift.startTime)} - {formatTime(shift.endTime)}</div>
-                                                    <div className="text-muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{shift.jobArea?.name}</div>
-                                                </div>
-                                            ))}
+                                            {cellShifts.map(dto => {
+                                                const shift = dto.scheduledShift;
+                                                const isMatched = dto.status === 'MATCHED';
+                                                return (
+                                                    <div
+                                                        key={shift.id}
+                                                        className="shift-card"
+                                                        style={{
+                                                            background: 'white',
+                                                            border: `1px solid ${shift.published ? '#22c55e' : 'var(--primary)'}`,
+                                                            borderLeftWidth: '4px',
+                                                            padding: '0.4rem',
+                                                            borderRadius: '4px',
+                                                            marginBottom: '0.4rem',
+                                                            fontSize: '0.8rem',
+                                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                        onClick={() => onEditShift && onEditShift(shift)}
+                                                    >
+                                                        <div style={{ fontWeight: 700 }}>{formatTime(shift.startTime)} - {formatTime(shift.endTime)}</div>
+                                                        <div className="text-muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{shift.jobArea?.name}</div>
+
+                                                        {/* Comparison Data */}
+                                                        <div style={{ marginTop: '4px', paddingTop: '4px', borderTop: '1px dashed #eee', fontSize: '0.75rem' }}>
+                                                            {isMatched ? (
+                                                                <div style={{ color: dto.varianceMinutes > 15 || dto.varianceMinutes < -15 ? 'red' : 'green' }}>
+                                                                    Actual: {formatTime(dto.actualStart)} - {formatTime(dto.actualEnd)}
+                                                                </div>
+                                                            ) : (
+                                                                <div style={{ color: 'orange', fontStyle: 'italic' }}>
+                                                                    No Clock-in Found
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
                                         </td>
                                     );
                                 })}

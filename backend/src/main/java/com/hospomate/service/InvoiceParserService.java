@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospomate.model.InvoiceCost;
 import com.hospomate.repository.InvoiceCostRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,13 +24,17 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class InvoiceParserService {
+
+    private static final Logger log = LoggerFactory.getLogger(InvoiceParserService.class);
 
     private final InvoiceCostRepository repository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public InvoiceParserService(InvoiceCostRepository repository) {
+        this.repository = repository;
+    }
 
     @Value("${gemini.api.key:UNSET}")
     private String apiKey;

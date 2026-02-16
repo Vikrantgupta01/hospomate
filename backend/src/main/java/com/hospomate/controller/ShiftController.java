@@ -1,7 +1,9 @@
 package com.hospomate.controller;
 
 import com.hospomate.model.Shift;
+import com.hospomate.dto.ShiftComparisonDTO;
 import com.hospomate.repository.ShiftRepository;
+import com.hospomate.service.SquareService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/shifts")
@@ -16,6 +19,9 @@ public class ShiftController {
 
     @Autowired
     private ShiftRepository shiftRepository;
+
+    @Autowired
+    private SquareService squareService;
 
     @GetMapping("/staff/{staffId}")
     public List<Shift> getStaffShifts(@PathVariable long staffId) {
@@ -77,5 +83,21 @@ public class ShiftController {
         }
         // Mock Notification Trigger here
         System.out.println("Roster published for store " + storeId);
+    }
+
+    @GetMapping("/comparison/{storeId}")
+    public List<ShiftComparisonDTO> getShiftComparison(@PathVariable long storeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        return squareService.compareShifts(storeId, start, end);
+    }
+
+    @GetMapping("/report/{storeId}")
+    public Map<String, Object> getShiftReport(@PathVariable long storeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+
+        // Fetch completely Square-driven report
+        return squareService.getSquareShiftReport(storeId, start, end);
     }
 }

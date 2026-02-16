@@ -1,3 +1,5 @@
+/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/ShiftReportDTO.java
+/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/ShiftComparisonDTO.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/OrderRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/StoreController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/StoreService.java
@@ -36,3 +38,4 @@
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/JobAreaController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/MenuItemRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/OrderItem.java
+/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/SquareService.java
