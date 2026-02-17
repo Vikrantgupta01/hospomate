@@ -18,31 +18,16 @@ const ProcedureDashboard = () => {
     const fetchProcedures = async () => {
         setLoading(true);
         try {
-            // Fetch procedures for this staff member
-            // Assuming user.staffId exists or we use user.id to find staff
-            // The backend endpoint /procedures/staff/{id} uses staffId.
-            // We need to know the staffId. 
-            // Often AuthContext user object has id, role, storeId, but maybe not staffId unless mapped.
-            // Let's assume user.id maps to User entity, and we need to find staff.
-            // The backend endpoint /staff/store/{storeId} returns staff list.
-            // Or /procedures/my-tasks could have been better. 
+            // If STORE_OWNER, fetch all procedures for the store
+            if (user.role === 'STORE_OWNER') {
+                const res = await api.get(`/procedures/store/${user.storeId}`);
+                setProcedures(res.data);
+                setLoading(false);
+                return;
+            }
 
-            // Workaround: Call an endpoint to get current staff profile or list.
-            // Or assume user object has it.
-            // Let's try to fetch all procedures for store and filter? No.
-
-            // Let's try using user.id if backend supports it or if we updated Auth response.
-            // If not, we might need to fetch staff profile first.
-
-            // A common pattern: GET /staff/me
-
-            // For now, let's assume we can pass user.id to a specialized endpoint or logic.
-            // But I implemented /procedures/staff/{staffId}.
-
-            // Let's find the staff record for this user.
+            // Otherwise, find the staff record for this user
             const staffRes = await api.get(`/staff/store/${user.storeId}`);
-            // This returns all staff. 
-            // user.email matches staff.email or user.id matches staff.user.id
             const currentStaff = staffRes.data.find(s => s.user?.id === user.id || s.email === user.email);
 
             if (currentStaff) {

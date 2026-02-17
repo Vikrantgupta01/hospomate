@@ -35,21 +35,30 @@ const ProcedureChecklist = ({ procedure, onClose, userId }) => {
     };
 
     const handleTaskUpdate = async (taskId, updates) => {
+        // Update local state immediately for UI responsiveness
+        setTasks(prevTasks => prevTasks.map(t =>
+            t.id === taskId ? { ...t, ...updates } : t
+        ));
+
         try {
             if (!execution) return;
             await api.post(`/procedures/execute/${execution.id}/task/${taskId}`, updates);
-            // Update local state if needed (e.g. show checkmark)
-            // Here we can just track completion locally
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+            // Revert on error if needed, but for now just log
+        }
     };
 
     const handleSubmit = async () => {
-        if (!window.confirm("Submit checklist?")) return;
+        // Removed window.confirm for smoother UX/Testing
         try {
             await api.post(`/procedures/execute/${execution.id}/complete`);
             alert("Procedure Submitted!");
             onClose();
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to submit");
+        }
     };
 
     if (loading) return <div>Loading checklist...</div>;
@@ -74,6 +83,7 @@ const ProcedureChecklist = ({ procedure, onClose, userId }) => {
                                 <input
                                     type="checkbox"
                                     style={{ width: '24px', height: '24px' }}
+                                    checked={task.isCompleted || false}
                                     onChange={(e) => handleTaskUpdate(task.id, { isCompleted: e.target.checked })}
                                 />
                                 Mark as Done
@@ -85,7 +95,8 @@ const ProcedureChecklist = ({ procedure, onClose, userId }) => {
                                 className="input"
                                 placeholder="Add comment..."
                                 rows="2"
-                                onBlur={(e) => handleTaskUpdate(task.id, { isCompleted: true, comment: e.target.value })}
+                                value={task.comment || ''}
+                                onChange={(e) => handleTaskUpdate(task.id, { isCompleted: true, comment: e.target.value })}
                             />
                         )}
 
@@ -98,6 +109,7 @@ const ProcedureChecklist = ({ procedure, onClose, userId }) => {
                                         handleTaskUpdate(task.id, { isCompleted: true, photoUrl: 'uploaded-dummy.jpg' });
                                     }}
                                 />
+                                {task.isCompleted && <span style={{ color: 'green', fontSize: '0.9rem' }}>✓ Photo Uploaded</span>}
                                 <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '0.5rem' }}>* Photo upload simulated</p>
                             </div>
                         )}
