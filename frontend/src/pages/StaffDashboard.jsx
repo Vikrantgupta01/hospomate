@@ -71,6 +71,13 @@ const StaffDashboard = () => {
                         >
                             🛑 Clock Out
                         </button>
+                        <button
+                            className="btn btn-secondary"
+                            style={{ height: '4rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: 'var(--radius-lg)', gridColumn: '1 / -1', background: 'var(--slate-800)', color: 'white' }}
+                            onClick={() => navigate('/staff/procedures')}
+                        >
+                            📋 Opening & Closing Procedures
+                        </button>
                     </div>
                 </div>
 

@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import RosterMatrix from '../components/RosterMatrix';
 import RosterReport from '../components/RosterReport';
+import ProcedureManager from '../components/ProcedureManager';
 
 const StoreDashboard = () => {
     const { user, logout, loading } = useContext(AuthContext);
@@ -254,6 +255,7 @@ const StoreDashboard = () => {
                         { id: 'menu', label: 'Menu Room', icon: '🍽️' },
                         { id: 'staff', label: 'Team', icon: '👥' },
                         { id: 'roster', label: 'Roster', icon: '📅' },
+                        { id: 'procedures', label: 'Procedures', icon: '📋' },
                         { id: 'offers', label: 'Marketing', icon: '🔥' },
                         { id: 'inventory', label: 'Inventory & Costs', icon: '📦' },
                         { id: 'profile', label: 'Store Profile', icon: '🏪' }
@@ -445,6 +447,9 @@ const StoreDashboard = () => {
                         )}
                     </div>
                 )}
+
+                {/* PROCEDURES TAB */}
+                {activeTab === 'procedures' && <ProcedureManager storeId={user.storeId} />}
 
                 {/* OFFERS TAB */}
                 {activeTab === 'offers' && (

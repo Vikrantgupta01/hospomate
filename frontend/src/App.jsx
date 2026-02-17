@@ -8,6 +8,7 @@ import StoreMenu from './pages/StoreMenu';
 import Cart from './pages/Cart';
 import StoreDashboard from './pages/StoreDashboard';
 import StaffDashboard from './pages/StaffDashboard';
+import ProcedureDashboard from './pages/ProcedureDashboard';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/dashboard" element={<StoreDashboard />} />
             <Route path="/staff" element={<StaffDashboard />} />
+            <Route path="/staff/procedures" element={<ProcedureDashboard />} />
           </Routes>
         </Router>
       </CartProvider>

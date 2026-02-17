@@ -8,8 +8,26 @@ services:
       - SQUARE_ACCESS_TOKEN=${SQUARE_ACCESS_TOKEN}
       - SQUARE_LOCATION_ID=${SQUARE_LOCATION_ID}
       - SQUARE_ENVIRONMENT=${SQUARE_ENVIRONMENT}
-      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/hospomatedb
+      - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+    networks:
+      - hospomate-network
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=hospomatedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - hospomate-network
 
@@ -25,3 +43,6 @@ services:
 networks:
   hospomate-network:
     driver: bridge
+
+volumes:
+  postgres_data:
