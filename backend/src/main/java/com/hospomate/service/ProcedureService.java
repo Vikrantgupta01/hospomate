@@ -49,23 +49,62 @@ public class ProcedureService {
         return procedureRepository.findById(id).orElseThrow(() -> new RuntimeException("Procedure not found"));
     }
 
+    @Autowired
+    private org.springframework.ai.vectorstore.VectorStore vectorStore;
+
     @Transactional
     public Procedure createProcedure(ProcedureRequest request) {
         Procedure procedure = new Procedure();
         updateProcedureFromRequest(procedure, request);
-        return procedureRepository.save(procedure);
+        procedure = procedureRepository.save(procedure);
+        ingestProcedure(procedure);
+        return procedure;
     }
 
     @Transactional
     public Procedure updateProcedure(Long id, ProcedureRequest request) {
         Procedure procedure = getProcedure(id);
         updateProcedureFromRequest(procedure, request);
-        return procedureRepository.save(procedure);
+        procedure = procedureRepository.save(procedure);
+        ingestProcedure(procedure);
+        return procedure;
     }
 
     @Transactional
     public void deleteProcedure(Long id) {
         procedureRepository.deleteById(id);
+        // Clean up from vector store (Optional, requires ID tracking)
+        // vectorStore.delete(List.of(id.toString()));
+    }
+
+    private void ingestProcedure(Procedure procedure) {
+        try {
+            // 1. Convert Procedure to Text
+            StringBuilder content = new StringBuilder();
+            content.append("Procedure: ").append(procedure.getName()).append("\n");
+            content.append("Job Area: ").append(procedure.getJobArea().getName()).append("\n");
+            content.append("Store ID: ").append(procedure.getStore().getId()).append("\n");
+            content.append("Steps:\n");
+
+            for (ProcedureTask task : procedure.getTasks()) {
+                content.append(task.getOrderIndex()).append(". ").append(task.getDescription()).append("\n");
+            }
+
+            // 2. Create Document with Metadata
+            org.springframework.ai.document.Document doc = new org.springframework.ai.document.Document(
+                    content.toString(),
+                    java.util.Map.of(
+                            "procedureId", procedure.getId(),
+                            "storeId", procedure.getStore().getId(),
+                            "jobAreaId", procedure.getJobArea().getId()));
+
+            // 3. Save to Vector Store
+            vectorStore.add(List.of(doc));
+
+        } catch (Exception e) {
+            System.err.println("Failed to ingest procedure: " + e.getMessage());
+            // Don't fail the transaction just because AI ingestion failed
+        }
     }
 
     private void updateProcedureFromRequest(Procedure procedure, ProcedureRequest request) {
