@@ -79,31 +79,46 @@ public class ProcedureService {
 
     private void ingestProcedure(Procedure procedure) {
         try {
+            System.out.println("Starting ingestion for procedure ID: " + procedure.getId());
+            // Re-fetch to ensure we have full objects (avoid lazy loading / detached
+            // issues)
+            Store store = storeRepository.findById(procedure.getStore().getId()).orElse(null);
+            JobArea jobArea = jobAreaRepository.findById(procedure.getJobArea().getId()).orElse(null);
+
+            if (store == null || jobArea == null) {
+                System.err.println("Skipping ingestion: Store or JobArea not found for procedure " + procedure.getId());
+                return;
+            }
+
             // 1. Convert Procedure to Text
             StringBuilder content = new StringBuilder();
             content.append("Procedure: ").append(procedure.getName()).append("\n");
-            content.append("Job Area: ").append(procedure.getJobArea().getName()).append("\n");
-            content.append("Store ID: ").append(procedure.getStore().getId()).append("\n");
+            content.append("Job Area: ").append(jobArea.getName()).append("\n");
+            content.append("Store ID: ").append(store.getId()).append("\n");
             content.append("Steps:\n");
 
             for (ProcedureTask task : procedure.getTasks()) {
                 content.append(task.getOrderIndex()).append(". ").append(task.getDescription()).append("\n");
             }
 
+            System.out.println("Constructed content for embedding (length " + content.length() + "): "
+                    + content.toString().substring(0, Math.min(content.length(), 50)) + "...");
+
             // 2. Create Document with Metadata
             org.springframework.ai.document.Document doc = new org.springframework.ai.document.Document(
                     content.toString(),
                     java.util.Map.of(
-                            "procedureId", procedure.getId(),
-                            "storeId", procedure.getStore().getId(),
-                            "jobAreaId", procedure.getJobArea().getId()));
+                            "procedureId", String.valueOf(procedure.getId()),
+                            "storeId", String.valueOf(store.getId()),
+                            "jobAreaId", String.valueOf(jobArea.getId())));
 
             // 3. Save to Vector Store
             vectorStore.add(List.of(doc));
+            System.out.println("Procedure ingestion completed successfully for ID: " + procedure.getId());
 
         } catch (Exception e) {
             System.err.println("Failed to ingest procedure: " + e.getMessage());
-            // Don't fail the transaction just because AI ingestion failed
+            e.printStackTrace();
         }
     }
 

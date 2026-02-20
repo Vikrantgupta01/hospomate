@@ -64,7 +64,8 @@ const RosterMatrix = ({ storeId, staff, onEditShift, onDeleteShift }) => {
         return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    if (!staff || staff.length === 0) return <div className="p-4 text-center text-muted">No staff members found. Add staff to see the roster.</div>;
+    if (!staff || staff.length === 0) return <div className="text-muted" style={{ padding: '1rem', textAlign: 'center' }}>No staff members found. Add staff to see the roster.</div>;
+
 
     return (
         <div className="roster-matrix">

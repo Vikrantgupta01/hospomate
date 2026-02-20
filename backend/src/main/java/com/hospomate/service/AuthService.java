@@ -21,6 +21,9 @@ public class AuthService {
     @Autowired
     private StoreRepository storeRepository;
 
+    @Autowired
+    private com.hospomate.repository.StaffRepository staffRepository;
+
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already in use");
@@ -57,6 +60,11 @@ public class AuthService {
             Optional<Store> store = storeRepository.findByOwnerId(user.getId()).stream().findFirst();
             if (store.isPresent()) {
                 storeId = store.get().getId();
+            }
+        } else if (user.getRole() == User.Role.STAFF) {
+            Optional<com.hospomate.model.Staff> staffOpt = staffRepository.findByUserId(user.getId());
+            if (staffOpt.isPresent() && staffOpt.get().getStore() != null) {
+                storeId = staffOpt.get().getStore().getId();
             }
         }
 
