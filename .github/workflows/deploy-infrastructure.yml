@@ -1,0 +1,49 @@
+name: Deploy Infrastructure (CDK)
+
+on:
+  push:
+    paths:
+      - 'infrastructure/**'
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # TODO: You must deploy OidcRoleStack manually or via a different pipeline first before this workflow can work.
+          role-to-assume: arn:aws:iam::646194726437:role/GitHubActionsDeployRole
+          aws-region: us-east-1
+
+      - name: Setup Node (for CDK)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Build CDK Stacks
+        working-directory: ./infrastructure
+        run: mvn package
+
+      - name: Deploy CDK Stacks
+        working-directory: ./infrastructure
+        run: cdk deploy --all --require-approval never

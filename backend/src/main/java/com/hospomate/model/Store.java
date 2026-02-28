@@ -1,6 +1,7 @@
 package com.hospomate.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "stores")
@@ -20,6 +21,15 @@ public class Store {
     private String imageUrl;
     private Double latitude;
     private Double longitude;
+
+    @Column(name = "opening_time")
+    private java.time.LocalTime openingTime = java.time.LocalTime.of(9, 0);
+
+    @Column(name = "closing_time")
+    private java.time.LocalTime closingTime = java.time.LocalTime.of(22, 0);
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal revenuePerLabourHourThreshold = new BigDecimal("50.00");
 
     public Long getId() {
         return id;
@@ -75,5 +85,29 @@ public class Store {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public BigDecimal getRevenuePerLabourHourThreshold() {
+        return revenuePerLabourHourThreshold;
+    }
+
+    public void setRevenuePerLabourHourThreshold(BigDecimal revenuePerLabourHourThreshold) {
+        this.revenuePerLabourHourThreshold = revenuePerLabourHourThreshold;
+    }
+
+    public java.time.LocalTime getOpeningTime() {
+        return openingTime;
+    }
+
+    public void setOpeningTime(java.time.LocalTime openingTime) {
+        this.openingTime = openingTime;
+    }
+
+    public java.time.LocalTime getClosingTime() {
+        return closingTime;
+    }
+
+    public void setClosingTime(java.time.LocalTime closingTime) {
+        this.closingTime = closingTime;
     }
 }

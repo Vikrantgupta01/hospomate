@@ -22,6 +22,10 @@ public class MenuItem {
     private String imageUrl;
     private boolean available = true;
 
+    @ManyToOne
+    @JoinColumn(name = "item_category_id")
+    private ItemCategory category;
+
     public Long getId() {
         return id;
     }
@@ -76,5 +80,13 @@ public class MenuItem {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public ItemCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ItemCategory category) {
+        this.category = category;
     }
 }

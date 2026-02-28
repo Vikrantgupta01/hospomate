@@ -8,6 +8,8 @@ import RosterReport from '../components/RosterReport';
 import ProcedureManager from '../components/ProcedureManager';
 import KnowledgeBase from '../components/KnowledgeBase';
 import ChatInterface from '../components/ChatInterface';
+import IntelligenceSettings from '../components/IntelligenceSettings';
+import InsightsDashboard from '../components/InsightsDashboard';
 
 const StoreDashboard = () => {
     const { user, loading, logout } = useContext(AuthContext);
@@ -240,6 +242,8 @@ const StoreDashboard = () => {
                     {/* Chat Tab Removed - Now Floating Widget */}
                     <button onClick={() => setActiveTab('offers')} className={`sidebar-btn ${activeTab === 'offers' ? 'active' : ''}`}>Offers & Deals</button>
                     <button onClick={() => setActiveTab('inventory')} className={`sidebar-btn ${activeTab === 'inventory' ? 'active' : ''}`}>Inventory (Invoices)</button>
+                    <button onClick={() => setActiveTab('intelligence')} className={`sidebar-btn ${activeTab === 'intelligence' ? 'active' : ''}`}>AI Insights</button>
+                    <button onClick={() => setActiveTab('intelligence_config')} className={`sidebar-btn ${activeTab === 'intelligence_config' ? 'active' : ''}`}>Insights Setup</button>
                     <button onClick={() => setActiveTab('profile')} className={`sidebar-btn ${activeTab === 'profile' ? 'active' : ''}`}>Store Profile</button>
 
                     <div style={{ flex: 1 }}></div>
@@ -530,6 +534,10 @@ const StoreDashboard = () => {
 
                 {/* KNOWLEDGE BASE TAB */}
                 {activeTab === 'knowledge' && <KnowledgeBase />}
+
+                {/* INTELLIGENCE TABS */}
+                {activeTab === 'intelligence' && <InsightsDashboard storeId={user.storeId} />}
+                {activeTab === 'intelligence_config' && <IntelligenceSettings storeId={user.storeId} />}
 
                 {/* PROFILE TAB */}
                 {

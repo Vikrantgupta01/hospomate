@@ -183,7 +183,7 @@ public class SquareService {
         return new ArrayList<>();
     }
 
-    private List<Shift> fetchSquareShifts(LocalDateTime start, LocalDateTime end) {
+    public List<Shift> fetchSquareShifts(LocalDateTime start, LocalDateTime end) {
         List<Shift> allShifts = new ArrayList<>();
         String cursor = null;
 
@@ -262,7 +262,7 @@ public class SquareService {
         return allShifts;
     }
 
-    private Map<String, String> fetchTeamMemberNames() {
+    public Map<String, String> fetchTeamMemberNames() {
         Map<String, String> nameMap = new java.util.HashMap<>();
         try {
             com.squareup.square.TeamMembersClient teamApi = getClient().teamMembers();
@@ -285,10 +285,95 @@ public class SquareService {
         return nameMap;
     }
 
+    public List<String> fetchSquareJobTitles() {
+        java.util.Set<String> roles = new java.util.HashSet<>();
+        try {
+            com.squareup.square.TeamMembersClient teamApi = getClient().teamMembers();
+            SearchTeamMembersRequest request = SearchTeamMembersRequest.builder()
+                    .limit(100)
+                    .build();
+
+            SearchTeamMembersResponse response = teamApi.search(request);
+            if (response.getTeamMembers().isPresent()) {
+                for (TeamMember tm : response.getTeamMembers().get()) {
+                    if (tm.getWageSetting().isPresent()) {
+                        com.squareup.square.types.WageSetting wageSetting = tm.getWageSetting().get();
+                        if (wageSetting.getJobAssignments().isPresent()) {
+                            for (com.squareup.square.types.JobAssignment assignment : wageSetting.getJobAssignments()
+                                    .get()) {
+                                if (assignment.getJobTitle().isPresent()) {
+                                    String title = assignment.getJobTitle().get();
+                                    if (title != null && !title.trim().isEmpty()) {
+                                        roles.add(title.trim());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new java.util.ArrayList<>(roles);
+    }
+
+    public List<Order> fetchDetailedSquareOrders(LocalDateTime start, LocalDateTime end) {
+        List<Order> allOrders = new ArrayList<>();
+        String cursor = null;
+
+        if (locationTimezone == null) {
+            fetchLocationTimezone();
+        }
+
+        try {
+            com.squareup.square.OrdersClient ordersClient = getClient().orders();
+
+            do {
+                SearchOrdersRequest.Builder requestBuilder = SearchOrdersRequest.builder()
+                        .locationIds(List.of(locationId))
+                        .query(SearchOrdersQuery.builder()
+                                .filter(SearchOrdersFilter.builder()
+                                        .dateTimeFilter(SearchOrdersDateTimeFilter.builder()
+                                                .closedAt(TimeRange.builder()
+                                                        .startAt(start.atZone(ZoneId.systemDefault()).toOffsetDateTime()
+                                                                .toString())
+                                                        .endAt(end.atZone(ZoneId.systemDefault()).toOffsetDateTime()
+                                                                .toString())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .limit(50)
+                        .returnEntries(false); // We want the full order object, not just an entry
+
+                if (cursor != null) {
+                    requestBuilder.cursor(cursor);
+                }
+
+                SearchOrdersResponse response = ordersClient.search(requestBuilder.build());
+                if (response.getOrders().isPresent()) {
+                    for (Order order : response.getOrders().get()) {
+                        String state = String.valueOf(order.getState());
+                        if (state.contains("COMPLETED")) {
+                            allOrders.add(order);
+                        }
+                    }
+                }
+                cursor = response.getCursor().orElse(null);
+
+            } while (cursor != null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return allOrders;
+    }
+
     private LocalDateTime parseSquareTime(String isoDate) {
         if (isoDate == null)
             return null;
-        return OffsetDateTime.parse(isoDate).toLocalDateTime(); // simplified timezone handling
+        return OffsetDateTime.parse(isoDate).atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     private Map<String, Double> fetchDailySales(LocalDateTime start, LocalDateTime end) {
@@ -369,5 +454,96 @@ public class SquareService {
         // Fallback to Sydney for now as SDK methods are failing compilation
         // TODO: Implement dynamic timezone fetching once SDK signature is confirmed
         this.locationTimezone = "Australia/Sydney";
+    }
+
+    public List<String> fetchSquareCategoryNames() {
+        List<String> categories = new ArrayList<>();
+        try {
+            com.squareup.square.CatalogClient catalogApi = getClient().catalog();
+            com.squareup.square.types.ListCatalogRequest request = com.squareup.square.types.ListCatalogRequest
+                    .builder()
+                    .types("CATEGORY")
+                    .build();
+
+            com.squareup.square.core.SyncPagingIterable<com.squareup.square.types.CatalogObject> objects = catalogApi
+                    .list(request);
+            for (com.squareup.square.types.CatalogObject obj : objects) {
+                if (obj.getCategory().isPresent() && obj.getCategory().get().getCategoryData().isPresent()) {
+                    String name = obj.getCategory().get().getCategoryData().get().getName().orElse(null);
+                    if (name != null && !name.trim().isEmpty()) {
+                        categories.add(name);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return categories;
+    }
+
+    public Map<String, String> fetchVariationToCategoryMap() {
+        Map<String, String> map = new java.util.HashMap<>();
+        try {
+            com.squareup.square.CatalogClient catalogApi = getClient().catalog();
+
+            // First fetch all categories to map Category ID -> Name
+            Map<String, String> categoryIdToName = new java.util.HashMap<>();
+            com.squareup.square.types.ListCatalogRequest catRequest = com.squareup.square.types.ListCatalogRequest
+                    .builder()
+                    .types("CATEGORY")
+                    .build();
+            com.squareup.square.core.SyncPagingIterable<com.squareup.square.types.CatalogObject> catObjects = catalogApi
+                    .list(catRequest);
+            for (com.squareup.square.types.CatalogObject obj : catObjects) {
+                if (obj.getCategory().isPresent()) {
+                    com.squareup.square.types.CatalogObjectCategory cat = obj.getCategory().get();
+                    if (cat.getId().isPresent() && cat.getCategoryData().isPresent()) {
+                        String name = cat.getCategoryData().get().getName().orElse(null);
+                        if (name != null) {
+                            categoryIdToName.put(cat.getId().get(), name);
+                        }
+                    }
+                }
+            }
+
+            // Next fetch all ITEMs to map Variation ID -> Category Name
+            com.squareup.square.types.ListCatalogRequest itemRequest = com.squareup.square.types.ListCatalogRequest
+                    .builder()
+                    .types("ITEM")
+                    .build();
+            com.squareup.square.core.SyncPagingIterable<com.squareup.square.types.CatalogObject> itemObjects = catalogApi
+                    .list(itemRequest);
+
+            for (com.squareup.square.types.CatalogObject obj : itemObjects) {
+                if (obj.getItem().isPresent()) {
+                    com.squareup.square.types.CatalogObjectItem itemObj = obj.getItem().get();
+                    if (itemObj.getItemData().isPresent()) {
+                        com.squareup.square.types.CatalogItem itemData = itemObj.getItemData().get();
+                        String catId = itemData.getCategoryId().orElse(null);
+
+                        if (catId != null && categoryIdToName.containsKey(catId)) {
+                            String catName = categoryIdToName.get(catId);
+
+                            // Map every variation of this item to the category name
+                            if (itemData.getVariations().isPresent()) {
+                                for (com.squareup.square.types.CatalogObject variationObj : itemData.getVariations()
+                                        .get()) {
+                                    if (variationObj.getItemVariation().isPresent()) {
+                                        String variationId = variationObj.getItemVariation().get().getId();
+                                        if (variationId != null) {
+                                            map.put(variationId, catName);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching Variation to Category Map: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return map;
     }
 }
