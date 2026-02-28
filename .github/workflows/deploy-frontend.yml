@@ -10,8 +10,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  FRONTEND_BUCKET: <YOUR_BUCKET_NAME>
-  CLOUDFRONT_DISTRIBUTION_ID: <YOUR_DISTRIBUTION_ID>
+  FRONTEND_BUCKET: frontendstack-frontendbucketefe2e19c-0jxn8afo5tzh
+  CLOUDFRONT_DISTRIBUTION_ID: E2RTGVGB8O8XQL
 
 permissions:
   id-token: write

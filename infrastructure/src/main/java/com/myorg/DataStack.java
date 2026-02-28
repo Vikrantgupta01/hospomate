@@ -17,7 +17,7 @@ public class DataStack extends Stack {
 
         this.database = DatabaseInstance.Builder.create(this, "HospoDb")
                 .engine(DatabaseInstanceEngine.postgres(PostgresInstanceEngineProps.builder()
-                        .version(PostgresEngineVersion.VER_15_4)
+                        .version(PostgresEngineVersion.VER_16)
                         .build()))
                 .vpc(vpc)
                 .vpcSubnets(software.amazon.awscdk.services.ec2.SubnetSelection.builder()
