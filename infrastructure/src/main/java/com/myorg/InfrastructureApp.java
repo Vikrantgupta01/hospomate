@@ -18,7 +18,9 @@ public class InfrastructureApp {
                 dataStack.getDbSecret(), StackProps.builder().build());
         backendStack.addDependency(dataStack);
 
-        FrontendStack frontendStack = new FrontendStack(app, "FrontendStack", StackProps.builder().build());
+        FrontendStack frontendStack = new FrontendStack(app, "FrontendStack", backendStack.getLoadBalancer(),
+                StackProps.builder().build());
+        frontendStack.addDependency(backendStack);
 
         OidcRoleStack oidcRoleStack = new OidcRoleStack(app, "OidcRoleStack", StackProps.builder().build());
 

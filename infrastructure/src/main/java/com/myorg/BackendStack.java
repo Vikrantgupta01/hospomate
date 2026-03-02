@@ -8,12 +8,15 @@ import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.ecs.*;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
+import software.amazon.awscdk.services.elasticloadbalancingv2.IApplicationLoadBalancer;
 import software.amazon.awscdk.services.secretsmanager.ISecret;
 import software.constructs.Construct;
 
 import java.util.Map;
 
 public class BackendStack extends Stack {
+
+        private final IApplicationLoadBalancer loadBalancer;
 
         public BackendStack(final Construct scope, final String id, final IVpc vpc, final ISecret dbSecret,
                         final StackProps props) {
@@ -62,6 +65,8 @@ public class BackendStack extends Stack {
                                 .publicLoadBalancer(true)
                                 .build();
 
+                this.loadBalancer = fargateService.getLoadBalancer();
+
                 repository.grantPull(fargateService.getTaskDefinition().getExecutionRole());
 
                 fargateService.getTargetGroup()
@@ -72,5 +77,9 @@ public class BackendStack extends Stack {
                                                                              // doesn't fail CloudFormation
                                                 .interval(Duration.seconds(60))
                                                 .build());
+        }
+
+        public IApplicationLoadBalancer getLoadBalancer() {
+                return this.loadBalancer;
         }
 }
