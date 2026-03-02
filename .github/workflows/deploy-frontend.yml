@@ -31,6 +31,8 @@ jobs:
 
       - name: Install dependencies and Build
         working-directory: ./frontend
+        env:
+          VITE_API_URL: http://Backen-Hospo-796ZzcyuRERE-1555257442.us-east-1.elb.amazonaws.com/api
         run: |
           npm ci
           npm run build
