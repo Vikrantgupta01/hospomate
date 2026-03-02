@@ -15,49 +15,62 @@ import java.util.Map;
 
 public class BackendStack extends Stack {
 
-    public BackendStack(final Construct scope, final String id, final IVpc vpc, final ISecret dbSecret,
-            final StackProps props) {
-        super(scope, id, props);
+        public BackendStack(final Construct scope, final String id, final IVpc vpc, final ISecret dbSecret,
+                        final StackProps props) {
+                super(scope, id, props);
 
-        Repository repository = Repository.Builder.create(this, "BackendRepo")
-                .repositoryName("hospomate-backend")
-                .build();
+                Repository repository = Repository.Builder.create(this, "BackendRepo")
+                                .repositoryName("hospomate-backend")
+                                .build();
 
-        Cluster cluster = Cluster.Builder.create(this, "HospoCluster")
-                .vpc(vpc)
-                .clusterName("hospomate-cluster")
-                .build();
+                Cluster cluster = Cluster.Builder.create(this, "HospoCluster")
+                                .vpc(vpc)
+                                .clusterName("hospomate-cluster")
+                                .build();
 
-        ApplicationLoadBalancedFargateService fargateService = ApplicationLoadBalancedFargateService.Builder
-                .create(this, "HospoFargateService")
-                .cluster(cluster)
-                .cpu(512)
-                .memoryLimitMiB(1024)
-                .desiredCount(1)
-                .taskImageOptions(ApplicationLoadBalancedTaskImageOptions.builder()
-                        .image(ContainerImage.fromRegistry("amazon/amazon-ecs-sample"))
-                        .containerPort(8080)
-                        .environment(Map.of(
-                                "SPRING_PROFILES_ACTIVE", "prod"))
-                        .secrets(Map.of(
-                                "DB_PASSWORD",
-                                software.amazon.awscdk.services.ecs.Secret.fromSecretsManager(dbSecret, "password"),
-                                "DB_USERNAME",
-                                software.amazon.awscdk.services.ecs.Secret.fromSecretsManager(dbSecret, "username"),
-                                "DB_HOST",
-                                software.amazon.awscdk.services.ecs.Secret.fromSecretsManager(dbSecret, "host"),
-                                "DB_PORT",
-                                software.amazon.awscdk.services.ecs.Secret.fromSecretsManager(dbSecret, "port")))
-                        .build())
-                .publicLoadBalancer(true)
-                .build();
+                ApplicationLoadBalancedTaskImageOptions taskImageOptions = ApplicationLoadBalancedTaskImageOptions
+                                .builder()
+                                .containerName("web")
+                                .image(ContainerImage.fromRegistry("jmalloc/echo-server"))
+                                .containerPort(8080)
+                                .environment(Map.of(
+                                                "SPRING_PROFILES_ACTIVE", "prod"))
+                                .secrets(Map.of(
+                                                "DB_PASSWORD",
+                                                software.amazon.awscdk.services.ecs.Secret
+                                                                .fromSecretsManager(dbSecret,
+                                                                                "password"),
+                                                "DB_USERNAME",
+                                                software.amazon.awscdk.services.ecs.Secret
+                                                                .fromSecretsManager(dbSecret,
+                                                                                "username"),
+                                                "DB_HOST",
+                                                software.amazon.awscdk.services.ecs.Secret
+                                                                .fromSecretsManager(dbSecret, "host"),
+                                                "DB_PORT",
+                                                software.amazon.awscdk.services.ecs.Secret
+                                                                .fromSecretsManager(dbSecret, "port")))
+                                .build();
 
-        repository.grantPull(fargateService.getTaskDefinition().getExecutionRole());
+                ApplicationLoadBalancedFargateService fargateService = ApplicationLoadBalancedFargateService.Builder
+                                .create(this, "HospoFargateService")
+                                .cluster(cluster)
+                                .cpu(512)
+                                .memoryLimitMiB(1024)
+                                .desiredCount(1)
+                                .taskImageOptions(taskImageOptions)
+                                .publicLoadBalancer(true)
+                                .build();
 
-        fargateService.getTargetGroup()
-                .configureHealthCheck(software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck.builder()
-                        .path("/actuator/health")
-                        .interval(Duration.seconds(60))
-                        .build());
-    }
+                repository.grantPull(fargateService.getTaskDefinition().getExecutionRole());
+
+                fargateService.getTargetGroup()
+                                .configureHealthCheck(software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck
+                                                .builder()
+                                                .path("/actuator/health")
+                                                .healthyHttpCodes("200,404") // Allow 404 so the initial dummy container
+                                                                             // doesn't fail CloudFormation
+                                                .interval(Duration.seconds(60))
+                                                .build());
+        }
 }
