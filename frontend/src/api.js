@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
+    // VITE_API_URL is injected during the build process
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
 });
 
