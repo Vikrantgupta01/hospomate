@@ -1,0 +1,275 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/InsightsDashboard.jsx
+  38:8  warning  React Hook useEffect has a missing dependency: 'getWeekString'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/IntelligenceSettings.jsx
+  16:9  error  Error: Cannot access variable before it is declared
+
+`fetchData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  14 |
+  15 |     useEffect(() => {
+> 16 |         fetchData();
+     |         ^^^^^^^^^ `fetchData` accessed before it is declared
+  17 |         // eslint-disable-next-line
+  18 |     }, [storeId]);
+  19 |
+
+  18 |     }, [storeId]);
+  19 |
+> 20 |     const fetchData = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 21 |         try {
+     | ^^^^^^^^^^^^^
+> 22 |             const contRes = await fetch(`/api/admin/config/contributions/${storeId}`);
+     …
+     | ^^^^^^^^^^^^^
+> 33 |         }
+     | ^^^^^^^^^^^^^
+> 34 |     };
+     | ^^^^^^^ `fetchData` is declared here
+  35 |
+  36 |     const handleAddContribution = async (e) => {
+  37 |         e.preventDefault();  react-hooks/immutability
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/KnowledgeBase.jsx
+  13:8  warning  React Hook useEffect has a missing dependency: 'fetchDocuments'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/ProcedureChecklist.jsx
+   10:9   error    Error: Cannot access variable before it is declared
+
+`startOrResumeExecution` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+   8 |
+   9 |     useEffect(() => {
+> 10 |         startOrResumeExecution();
+     |         ^^^^^^^^^^^^^^^^^^^^^^ `startOrResumeExecution` accessed before it is declared
+  11 |     }, [procedure, userId]);
+  12 |
+  13 |     const startOrResumeExecution = async () => {
+
+  11 |     }, [procedure, userId]);
+  12 |
+> 13 |     const startOrResumeExecution = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 14 |         try {
+     | ^^^^^^^^^^^^^
+> 15 |             // Start execution
+     …
+     | ^^^^^^^^^^^^^
+> 34 |         setLoading(false);
+     | ^^^^^^^^^^^^^
+> 35 |     };
+     | ^^^^^^^ `startOrResumeExecution` is declared here
+  36 |
+  37 |     const handleTaskUpdate = async (taskId, updates) => {
+  38 |         // Update local state immediately for UI responsiveness  react-hooks/immutability
+   11:8   warning  React Hook useEffect has a missing dependency: 'startOrResumeExecution'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  106:48  error    'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/ProcedureManager.jsx
+  21:13  error    Error: Cannot access variable before it is declared
+
+`fetchProcedures` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  19 |     useEffect(() => {
+  20 |         if (storeId) {
+> 21 |             fetchProcedures();
+     |             ^^^^^^^^^^^^^^^ `fetchProcedures` accessed before it is declared
+  22 |             fetchJobAreas();
+  23 |         }
+  24 |     }, [storeId]);
+
+  24 |     }, [storeId]);
+  25 |
+> 26 |     const fetchProcedures = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |         try {
+     | ^^^^^^^^^^^^^
+> 28 |             const res = await api.get(`/procedures/store/${storeId}`);
+     | ^^^^^^^^^^^^^
+> 29 |             setProcedures(res.data);
+     | ^^^^^^^^^^^^^
+> 30 |         } catch (err) { console.error(err); }
+     | ^^^^^^^^^^^^^
+> 31 |     };
+     | ^^^^^^^ `fetchProcedures` is declared here
+  32 |
+  33 |     const fetchJobAreas = async () => {
+  34 |         try {   react-hooks/immutability
+  22:13  error    Error: Cannot access variable before it is declared
+
+`fetchJobAreas` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  20 |         if (storeId) {
+  21 |             fetchProcedures();
+> 22 |             fetchJobAreas();
+     |             ^^^^^^^^^^^^^ `fetchJobAreas` accessed before it is declared
+  23 |         }
+  24 |     }, [storeId]);
+  25 |
+
+  31 |     };
+  32 |
+> 33 |     const fetchJobAreas = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 34 |         try {
+     | ^^^^^^^^^^^^^
+> 35 |             const res = await api.get(`/job-areas/store/${storeId}`);
+     | ^^^^^^^^^^^^^
+> 36 |             setJobAreas(res.data);
+     | ^^^^^^^^^^^^^
+> 37 |         } catch (err) { console.error(err); }
+     | ^^^^^^^^^^^^^
+> 38 |     };
+     | ^^^^^^^ `fetchJobAreas` is declared here
+  39 |
+  40 |     const handleDelete = async (id) => {
+  41 |         if (!window.confirm('Delete this procedure?')) return;  react-hooks/immutability
+  24:8   warning  React Hook useEffect has missing dependencies: 'fetchJobAreas' and 'fetchProcedures'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/RosterMatrix.jsx
+   4:54  error    'onDeleteShift' is defined but never used                                                                       no-unused-vars
+  27:8   warning  React Hook useEffect has a missing dependency: 'fetchShifts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/vicky/Documents/HospoMate/frontend/src/components/RosterReport.jsx
+  25:12  error    'currentPage' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+  26:11  error    'itemsPerPage' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                    no-unused-vars
+  32:8   warning  React Hook useEffect has a missing dependency: 'fetchReport'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  70:11  error    'formatDate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                      no-unused-vars
+
+/Users/vicky/Documents/HospoMate/frontend/src/context/AuthContext.jsx
+   4:14  error  Fast refresh only works when a file only exports components. Move your React context(s) to a separate file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-refresh/only-export-components
+  13:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  11 |         const storedUser = localStorage.getItem('user');
+  12 |         if (storedUser) {
+> 13 |             setUser(JSON.parse(storedUser));
+     |             ^^^^^^^ Avoid calling setState() directly within an effect
+  14 |         }
+  15 |         setLoading(false);
+  16 |     }, []);  react-hooks/set-state-in-effect
+
+/Users/vicky/Documents/HospoMate/frontend/src/pages/ProcedureDashboard.jsx
+  14:13  error    Error: Cannot access variable before it is declared
+
+`fetchProcedures` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  12 |     useEffect(() => {
+  13 |         if (user) {
+> 14 |             fetchProcedures();
+     |             ^^^^^^^^^^^^^^^ `fetchProcedures` accessed before it is declared
+  15 |         }
+  16 |     }, [user]);
+  17 |
+
+  16 |     }, [user]);
+  17 |
+> 18 |     const fetchProcedures = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 19 |         setLoading(true);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+> 20 |         try {
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+> 38 |         setLoading(false);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+> 39 |     };
+     | ^^^^^^^ `fetchProcedures` is declared here
+  40 |
+  41 |     if (loading) return <div>Loading procedures...</div>;
+  42 |  react-hooks/immutability
+  16:8   warning  React Hook useEffect has a missing dependency: 'fetchProcedures'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+/Users/vicky/Documents/HospoMate/frontend/src/pages/StaffDashboard.jsx
+   2:8   error    'api' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+   8:12  error    'shifts' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+   8:20  error    'setShifts' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      no-unused-vars
+  16:9   error    Error: Cannot access variable before it is declared
+
+`fetchShifts` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  14 |             return;
+  15 |         }
+> 16 |         fetchShifts();
+     |         ^^^^^^^^^^^ `fetchShifts` accessed before it is declared
+  17 |     }, [user]);
+  18 |
+  19 |     const fetchShifts = async () => {
+
+  17 |     }, [user]);
+  18 |
+> 19 |     const fetchShifts = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 20 |         // Basic implementation: fetch all shifts for this staff (backend endpoint implementation pending user-link update)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 21 |         // For now assuming we can at least render the page
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |         }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |     };
+     | ^^^^^^^ `fetchShifts` is declared here
+  30 |
+  31 |     const handleClockIn = () => {
+  32 |         alert("Clock In functionality requires Shift ID assignment (Admin Roster). Not implemented in prototype.");  react-hooks/immutability
+  17:8   warning  React Hook useEffect has a missing dependency: 'navigate'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+
+/Users/vicky/Documents/HospoMate/frontend/src/pages/StoreDashboard.jsx
+  20:12   error    'shifts' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+  49:9    error    Error: Cannot access variable before it is declared
+
+`fetchData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  47 |         }
+  48 |
+> 49 |         fetchData();
+     |         ^^^^^^^^^ `fetchData` accessed before it is declared
+  50 |
+  51 |     }, [user, activeTab, loading]);
+  52 |
+
+  51 |     }, [user, activeTab, loading]);
+  52 |
+> 53 |     const fetchData = async () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 54 |         if (!user.storeId) return;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 55 |
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 56 |         if (activeTab === 'menu') await fetchMenu();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |         if (activeTab === 'profile') await fetchStoreProfile();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |         if (activeTab === 'staff') { await fetchStaff(); await fetchJobAreas(); }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |         if (activeTab === 'roster') { await fetchShifts(); await fetchStaff(); await fetchJobAreas(); }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |         if (activeTab === 'offers') await fetchOffers();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 61 |         if (activeTab === 'inventory') await fetchInvoices();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 62 |     };
+     | ^^^^^^^ `fetchData` is declared here
+  63 |
+  64 |     // --- Fetchers ---
+  65 |  react-hooks/immutability
+  51:8    warning  React Hook useEffect has missing dependencies: 'fetchData' and 'navigate'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+  85:11   error    'handleAddStaff' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             no-unused-vars
+  86:11   error    'handleAddJobArea' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+  87:141  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+  88:11   error    'handleCreateOffer' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          no-unused-vars
+  89:11   error    'handleDeleteOffer' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          no-unused-vars
+
+✖ 32 problems (23 errors, 9 warnings)
+

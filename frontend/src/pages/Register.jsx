@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('CUSTOMER');
+    const [role, setRole] = useState('STORE_OWNER');
     const [storeName, setStoreName] = useState('');
     const { register } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Register = () => {
             } else if (result.data?.role === 'STAFF') {
                 navigate('/staff');
             } else {
-                navigate('/');
+                navigate('/login');
             }
         } else {
             setError(result.message);
@@ -54,7 +54,6 @@ const Register = () => {
                     <div className="form-group">
                         <label className="label">Account Type</label>
                         <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="CUSTOMER">Customer (Order Food)</option>
                             <option value="STORE_OWNER">Store Owner (Manage Shop)</option>
                             <option value="STAFF">Staff (Clock In/Out)</option>
                         </select>

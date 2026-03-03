@@ -16,16 +16,6 @@ public class StoreController {
     @Autowired
     private StoreService storeService;
 
-    @GetMapping
-    public List<Store> getAllStores() {
-        return storeService.getAllStores();
-    }
-
-    @GetMapping("/search")
-    public List<Store> searchStores(@RequestParam String query) {
-        return storeService.searchStores(query);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Store> getStore(@PathVariable Long id) {
         return storeService.getStoreById(id)

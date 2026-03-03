@@ -13,7 +13,7 @@ import InsightsDashboard from '../components/InsightsDashboard';
 
 const StoreDashboard = () => {
     const { user, loading, logout } = useContext(AuthContext);
-    const [orders, setOrders] = useState([]);
+
     const [menu, setMenu] = useState([]);
     const [storeProfile, setStoreProfile] = useState(null);
     const [staff, setStaff] = useState([]);
@@ -22,8 +22,8 @@ const StoreDashboard = () => {
     const [offers, setOffers] = useState([]);
     const [invoices, setInvoices] = useState([]);
 
-    // Tabs: 'orders', 'menu', 'profile', 'staff', 'roster', 'offers', 'inventory'
-    const [activeTab, setActiveTab] = useState('orders');
+    // Tabs: 'menu', 'profile', 'staff', 'roster', 'offers', 'inventory'
+    const [activeTab, setActiveTab] = useState('menu');
 
     const [editingItem, setEditingItem] = useState(null); // For Menu, Staff, Shift, Offer
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,15 +47,12 @@ const StoreDashboard = () => {
         }
 
         fetchData();
-        const interval = setInterval(() => {
-            if (activeTab === 'orders') fetchOrders();
-        }, 5000);
-        return () => clearInterval(interval);
+
     }, [user, activeTab, loading]);
 
     const fetchData = async () => {
         if (!user.storeId) return;
-        await fetchOrders();
+
         if (activeTab === 'menu') await fetchMenu();
         if (activeTab === 'profile') await fetchStoreProfile();
         if (activeTab === 'staff') { await fetchStaff(); await fetchJobAreas(); }
@@ -65,7 +62,7 @@ const StoreDashboard = () => {
     };
 
     // --- Fetchers ---
-    const fetchOrders = async () => { try { const res = await api.get(`/orders/store/${user.storeId}`); setOrders(res.data); } catch (err) { console.error(err); } };
+
     const fetchMenu = async () => { try { const res = await api.get(`/products/store/${user.storeId}`); setMenu(res.data); } catch (err) { console.error(err); } };
     const fetchStoreProfile = async () => { try { const res = await api.get(`/stores/${user.storeId}`); setStoreProfile(res.data); } catch (err) { console.error(err); } };
     const fetchStaff = async () => { try { const res = await api.get(`/users/store/${user.storeId}/staff`); setStaff(res.data); } catch (err) { console.error(err); } };
@@ -75,7 +72,7 @@ const StoreDashboard = () => {
     const fetchInvoices = async () => { try { const res = await api.get(`/stores/${user.storeId}/invoices`); setInvoices(res.data); } catch (err) { console.error(err); } };
 
     // --- Actions ---
-    const handleUpdateStatus = async (orderId, status) => { try { await api.put(`/orders/${orderId}/status?status=${status}`); fetchOrders(); } catch (err) { console.error(err); } };
+
 
     // Generic Delete
     const handleDelete = async (url, callback) => {
@@ -233,7 +230,7 @@ const StoreDashboard = () => {
                     <p style={{ color: 'var(--slate-400)', fontSize: '0.875rem', margin: 0 }}>Welcome, {user.email}</p>
                 </div>
                 <nav style={{ display: 'flex', flexDirection: 'column' }}>
-                    <button onClick={() => setActiveTab('orders')} className={`sidebar-btn ${activeTab === 'orders' ? 'active' : ''}`}>Orders & Live Feed</button>
+
                     <button onClick={() => setActiveTab('menu')} className={`sidebar-btn ${activeTab === 'menu' ? 'active' : ''}`}>Menu Management</button>
                     <button onClick={() => setActiveTab('staff')} className={`sidebar-btn ${activeTab === 'staff' ? 'active' : ''}`}>Staff & Areas</button>
                     <button onClick={() => setActiveTab('roster')} className={`sidebar-btn ${activeTab === 'roster' ? 'active' : ''}`}>Roster & Shifts</button>
@@ -278,45 +275,7 @@ const StoreDashboard = () => {
                     </button>
                 </div>
 
-                {activeTab === 'orders' && (
-                    <div className="animate-in">
-                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Live Orders</h2>
-                        <div className="grid-responsive">
-                            {orders.length === 0 ? (
-                                <div className="card" style={{ padding: '3rem', textAlign: 'center', gridColumn: '1/-1' }}>
-                                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
-                                    <h3>No orders yet</h3>
-                                    <p className="text-muted">New orders will appear here in real-time.</p>
-                                </div>
-                            ) : orders.map(order => (
-                                <div key={order.id} className="card" style={{ padding: '1.5rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                                        <div>
-                                            <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Order #{order.id}</h3>
-                                            <p className="text-muted" style={{ fontSize: '0.9rem' }}>{new Date(order.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </div>
-                                        <span className={`badge ${order.status === 'PENDING' ? 'badge-warning' : 'badge-success'}`}>{order.status}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
-                                        {order.items.map((item, idx) => (
-                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                                                <span>{item.quantity}x {item.menuItem.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        {order.status === 'PENDING' && (<>
-                                            <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => handleUpdateStatus(order.id, 'ACCEPTED')}>Accept</button>
-                                            <button className="btn btn-danger btn-sm" style={{ flex: 1 }} onClick={() => handleUpdateStatus(order.id, 'REJECTED')}>Reject</button>
-                                        </>)}
-                                        {order.status === 'ACCEPTED' && <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => handleUpdateStatus(order.id, 'READY')}>Ready for Pickup</button>}
-                                        {order.status === 'READY' && <button className="btn btn-success btn-sm" style={{ flex: 1 }} onClick={() => handleUpdateStatus(order.id, 'COMPLETED')}>Complete</button>}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+
 
                 {activeTab === 'menu' && (
                     <div className="animate-in">

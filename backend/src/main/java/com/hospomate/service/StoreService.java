@@ -19,14 +19,6 @@ public class StoreService {
     @Autowired
     private MenuItemRepository menuItemRepository;
 
-    public List<Store> getAllStores() {
-        return storeRepository.findAll();
-    }
-
-    public List<Store> searchStores(String query) {
-        return storeRepository.findByNameContainingIgnoreCase(query);
-    }
-
     public Optional<Store> getStoreById(Long id) {
         return storeRepository.findById(id);
     }

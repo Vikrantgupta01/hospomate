@@ -6,7 +6,6 @@
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/StoreRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/Shift.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/StaffRepository.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/OrderService.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/TaskExecutionRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/RevenueIntelligenceService.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/InvoiceCostRepository.java
@@ -33,13 +32,11 @@
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/KnowledgeDoc.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/MenuItemRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/ShiftComparisonDTO.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/OrderRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/AdminConfigController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/StoreService.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/UserRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/HospoMateApplication.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/JobRoleContribution.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/OrderRequest.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/ProcedureRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/ChatController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/ProcedureTaskDTO.java
@@ -47,7 +44,6 @@
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/AuthController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/KnowledgeDocRepository.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/Store.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/OrderItemRequest.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/OfferController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/WeeklyDashboardDTO.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/LoginRequest.java
@@ -55,8 +51,6 @@
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/HourlyInsightDTO.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/IntelligenceController.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/InvoiceCost.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/OrderController.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/Order.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/ProcedureExecution.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/dto/AuthResponse.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/repository/ProcedureExecutionRepository.java
@@ -66,5 +60,4 @@
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/config/WebConfig.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/ProcedureService.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/controller/JobAreaController.java
-/Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/model/OrderItem.java
 /Users/vicky/Documents/HospoMate/backend/src/main/java/com/hospomate/service/SquareService.java
