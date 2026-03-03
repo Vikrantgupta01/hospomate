@@ -6,6 +6,7 @@ import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
 import software.amazon.awscdk.services.ec2.InstanceSize;
 import software.amazon.awscdk.services.ec2.InstanceType;
+import software.amazon.awscdk.services.ec2.BastionHostLinux;
 import software.amazon.awscdk.services.rds.*;
 import software.constructs.Construct;
 
@@ -29,6 +30,14 @@ public class DataStack extends Stack {
                 .allocatedStorage(20)
                 .databaseName("hospomate")
                 .build();
+
+        // Adds a secure jump box to allow SSM connections from local machine
+        BastionHostLinux bastion = BastionHostLinux.Builder.create(this, "BastionHost")
+                .vpc(vpc)
+                .build();
+
+        // Allows the jump box to talk to the database on the default PostgreSQL port
+        this.database.getConnections().allowDefaultPortFrom(bastion);
     }
 
     public DatabaseInstance getDatabase() {
