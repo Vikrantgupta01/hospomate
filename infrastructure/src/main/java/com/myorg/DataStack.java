@@ -34,7 +34,7 @@ public class DataStack extends Stack {
         // Adds a secure jump box to allow SSM connections from local machine
         BastionHostLinux bastion = BastionHostLinux.Builder.create(this, "BastionHost")
                 .vpc(vpc)
-                .instanceType(InstanceType.of(InstanceClass.T2, InstanceSize.MICRO))
+                .instanceType(InstanceType.of(InstanceClass.T3, InstanceSize.MICRO))
                 .build();
 
         // Allows the jump box to talk to the database on the default PostgreSQL port
